@@ -114,13 +114,11 @@ app.listen(
     port: env.SERVER_PORT,
     host: "0.0.0.0",
   },
-  (err, address) => {
+  (err) => {
     if (err) {
       app.log.error(err);
       process.exit(1);
     }
-
-    app.log.info(`server listening at ${address}`);
   },
 );
 
@@ -130,14 +128,11 @@ app.ready().then(() => {
       { hours: 1 },
       new AsyncTask(
         "clean expired links",
-        () => {
-          app.log.info("cleaning expired links");
-
-          return db
+        () =>
+          db
             .deleteFrom("links")
             .where(sql<boolean>`expired_at < CURRENT_TIMESTAMP`)
-            .executeTakeFirstOrThrow();
-        },
+            .executeTakeFirstOrThrow(),
         (err) => {
           app.log.error(err);
         },
