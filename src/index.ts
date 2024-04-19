@@ -62,6 +62,7 @@ const LinksReply = Type.Object({
 const inOneWeek = dayjs.duration(1, "week");
 
 app.post<{
+  Headers: { ["X-API-Key"]?: string };
   Body: Static<typeof LinksBody>;
   Reply: Static<typeof LinksReply>;
 }>(
@@ -75,6 +76,10 @@ app.post<{
     },
   },
   async (request, reply) => {
+    if (request.headers["x-api-key"] !== env.API_KEY) {
+      return reply.forbidden();
+    }
+
     const { target, expire_in } = request.body;
     const address = generateAddress();
 

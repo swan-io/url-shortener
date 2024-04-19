@@ -9,10 +9,11 @@ dotenv.config({
 export const env = validate({
   env: process.env,
   validators: {
+    NODE_ENV: oneOf("development", "test", "production"),
+    LOG_LEVEL: oneOf("debug", "info", "warn", "error", "fatal"),
+    API_KEY: string,
     DATABASE_URL: string,
     FALLBACK_URL: url,
-    LOG_LEVEL: oneOf("debug", "info", "warn", "error", "fatal"),
-    NODE_ENV: oneOf("development", "test", "production"),
     SERVER_PORT: number,
   },
 });
