@@ -12,10 +12,11 @@
     "url": "https://github.com/swan-io/url-shortener"
   },
   "scripts": {
-    "build": "yarn clean && tsc",
+    "build": "yarn clean && prettier '**/*' -u -c && yarn lint && tsc",
     "clean": "rm -rf dist",
     "dev": "tsx watch --clear-screen=false src",
     "format": "prettier '**/*' -u -w && prisma format",
+    "lint": "biome check . --files-ignore-unknown=true --no-errors-on-unmatched",
     "migrate": "prisma migrate dev",
     "start": "node dist",
     "typecheck": "tsc --noEmit"

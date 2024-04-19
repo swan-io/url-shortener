@@ -62,7 +62,7 @@ const LinksReply = Type.Object({
 const inOneWeek = dayjs.duration(1, "week");
 
 app.post<{
-  Headers: { ["X-API-Key"]?: string };
+  Headers: { "X-API-Key"?: string };
   Body: Static<typeof LinksBody>;
   Reply: Static<typeof LinksReply>;
 }>(
