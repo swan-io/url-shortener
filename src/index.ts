@@ -37,10 +37,6 @@ app.get<{ Params: { address: string } }>(
   async (request, reply) => {
     const { address } = request.params;
 
-    if (address.length !== 6) {
-      return reply.notFound(); // TODO: redirect to fallback url
-    }
-
     const result = await db
       .selectFrom("links")
       .select("target")
@@ -48,11 +44,7 @@ app.get<{ Params: { address: string } }>(
       .where(sql<boolean>`expired_at >= CURRENT_TIMESTAMP`)
       .executeTakeFirst();
 
-    if (result == null) {
-      return reply.notFound(); // TODO: redirect to fallback url
-    }
-
-    return reply.redirect(302, result.target);
+    return reply.redirect(302, result?.target ?? env.FALLBACK_URL);
   },
 );
 
@@ -128,7 +120,7 @@ app.listen(
       process.exit(1);
     }
 
-    console.log(`server listening at ${address}`);
+    app.log.info(`server listening at ${address}`);
   },
 );
 
@@ -138,11 +130,14 @@ app.ready().then(() => {
       { hours: 1 },
       new AsyncTask(
         "clean expired links",
-        () =>
-          db
+        () => {
+          app.log.info("cleaning expired links");
+
+          return db
             .deleteFrom("links")
             .where(sql<boolean>`expired_at < CURRENT_TIMESTAMP`)
-            .executeTakeFirstOrThrow(),
+            .executeTakeFirstOrThrow();
+        },
         (err) => {
           app.log.error(err);
         },
