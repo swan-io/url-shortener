@@ -1,0 +1,20 @@
+generator client {
+  provider        = "prisma-kysely"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgcrypto]
+}
+
+model User {
+  id         String   @id @default(dbgenerated("gen_random_uuid()"))
+  address    String   @unique
+  target     String
+  created_at DateTime @default(now())
+  expired_at DateTime
+
+  @@map("links")
+}

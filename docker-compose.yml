@@ -1,0 +1,11 @@
+services:
+  postgres:
+    image: postgres:16.2
+    restart: always
+    tty: true
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: shortener

@@ -1,0 +1,60 @@
+{
+  "name": "@swan-io/url-shortener",
+  "description": "Swan url shortener service",
+  "version": "0.1.0",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.9.0",
+    "yarn": "^1.22.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/swan-io/url-shortener"
+  },
+  "scripts": {
+    "build": "yarn clean && tsc",
+    "clean": "rm -rf dist",
+    "dev": "tsx watch --clear-screen=false src",
+    "format": "prettier '**/*' -u -w && prisma format",
+    "migrate": "prisma migrate dev",
+    "start": "node dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "prettier": {
+    "plugins": [
+      "prettier-plugin-organize-imports"
+    ]
+  },
+  "prisma": {
+    "schema": "src/database/schema.prisma"
+  },
+  "dependencies": {
+    "@fastify/schedule": "4.1.1",
+    "@fastify/sensible": "5.5.0",
+    "@fastify/type-provider-typebox": "4.0.0",
+    "@sinclair/typebox": "0.32.21",
+    "@swan-io/boxed": "2.1.1",
+    "close-with-grace": "1.3.0",
+    "dayjs": "1.11.10",
+    "dotenv": "16.4.5",
+    "fastify": "4.26.2",
+    "fastify-healthcheck": "4.4.0",
+    "kysely": "0.27.3",
+    "pg": "8.11.5",
+    "pino-pretty": "11.0.0",
+    "prisma": "5.12.1",
+    "prisma-kysely": "1.8.0",
+    "toad-scheduler": "3.0.1",
+    "ts-pattern": "5.1.1",
+    "valienv": "0.6.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.7.0",
+    "@types/node": "20.12.7",
+    "@types/pg": "8.11.5",
+    "prettier": "3.2.5",
+    "prettier-plugin-organize-imports": "3.2.4",
+    "tsx": "4.7.2",
+    "typescript": "5.4.5"
+  }
+}
