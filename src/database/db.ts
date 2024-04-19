@@ -6,6 +6,8 @@ import { DB } from "./generated/types";
 const dialect = new PostgresDialect({
   pool: new Pool({
     connectionString: env.DATABASE_URL,
+    min: 5,
+    max: 20,
   }),
 });
 
