@@ -45,7 +45,6 @@
     "prisma": "5.12.1",
     "prisma-kysely": "1.8.0",
     "toad-scheduler": "3.0.1",
-    "ts-pattern": "5.1.1",
     "valienv": "0.6.0"
   },
   "devDependencies": {
