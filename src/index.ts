@@ -8,7 +8,7 @@ import fastify from "fastify";
 import health from "fastify-healthcheck";
 import { sql } from "kysely";
 import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
-import { db } from "./database/db";
+import { db, kuttDb } from "./database/db";
 import { generateAddress } from "./utils/address";
 import { env } from "./utils/env";
 import { parseDuration } from "./utils/time";
@@ -49,7 +49,21 @@ app.get<{ Params: { address: string } }>(
       .where(sql<boolean>`expired_at >= CURRENT_TIMESTAMP`)
       .executeTakeFirst();
 
-    return reply.redirect(302, result?.target ?? env.FALLBACK_URL);
+    if (result != null) {
+      return reply.redirect(302, result.target ?? env.FALLBACK_URL);
+    }
+
+    // TODO: remove this once migration is done
+    const kuttResult = await kuttDb
+      .selectFrom("links")
+      .select("target")
+      .where("address", "=", address)
+      .where(
+        sql<boolean>`(expire_in IS NULL OR expire_in >= CURRENT_TIMESTAMP)`,
+      )
+      .executeTakeFirst();
+
+    return reply.redirect(302, kuttResult?.target ?? env.FALLBACK_URL);
   },
 );
 
