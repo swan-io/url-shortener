@@ -69,14 +69,15 @@ app.get<{ Params: { address: string } }>(
 );
 
 const LinksBody = Type.Object({
-  domain: Type.String({ format: "hostname" }),
-  target: Type.String({ format: "uri" }),
+  domain: Type.Optional(Type.String({ format: "hostname" })),
   expire_in: Type.Optional(Type.String()),
+  target: Type.String({ format: "uri" }),
 });
 
 const LinksReply = Type.Object({
-  link: Type.String({ format: "uri" }),
+  address: Type.String(),
   expired_at: Type.String(),
+  link: Type.Optional(Type.String({ format: "uri" })),
 });
 
 const inOneWeek = dayjs.duration(1, "week");
@@ -122,8 +123,11 @@ for (const path of ["/api/links", "/api/v2/links"]) {
       );
 
       return reply.status(200).send({
-        link: `https://${domain}/${address}`,
+        address,
         expired_at,
+        ...(domain != null && {
+          link: `https://${domain}/${address}`,
+        }),
       });
     },
   );
