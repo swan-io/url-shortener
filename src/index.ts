@@ -32,6 +32,11 @@ app.register(sensible);
 app.register(health, { healthcheckUrl: "/api/health" });
 app.register(schedule);
 
+// TODO: remove this once migration is achieved
+app.get("/api/v2/health", (_request, reply) => {
+  return reply.status(200).send("OK");
+});
+
 app.get<{ Params: { address: string } }>(
   "/:address",
   async (request, reply) => {
@@ -61,44 +66,47 @@ const LinksReply = Type.Object({
 
 const inOneWeek = dayjs.duration(1, "week");
 
-app.post<{
-  Headers: { "X-API-Key"?: string };
-  Body: Static<typeof LinksBody>;
-  Reply: Static<typeof LinksReply>;
-}>(
-  "/api/links",
-  {
-    schema: {
-      body: LinksBody,
-      response: {
-        200: LinksReply,
+// TODO: remove /api/v2/links once migration is achieved
+for (const path of ["/api/links", "/api/v2/links"]) {
+  app.post<{
+    Headers: { "X-API-Key"?: string };
+    Body: Static<typeof LinksBody>;
+    Reply: Static<typeof LinksReply>;
+  }>(
+    path,
+    {
+      schema: {
+        body: LinksBody,
+        response: {
+          200: LinksReply,
+        },
       },
     },
-  },
-  async (request, reply) => {
-    if (request.headers["x-api-key"] !== env.API_KEY) {
-      return reply.forbidden();
-    }
+    async (request, reply) => {
+      if (request.headers["x-api-key"] !== env.API_KEY) {
+        return reply.forbidden();
+      }
 
-    const { domain, target, expire_in } = request.body;
-    const address = generateAddress();
+      const { domain, target, expire_in } = request.body;
+      const address = generateAddress();
 
-    const expired_at = dayjs
-      .utc()
-      .add(parseDuration(expire_in) ?? inOneWeek)
-      .toISOString();
+      const expired_at = dayjs
+        .utc()
+        .add(parseDuration(expire_in) ?? inOneWeek)
+        .toISOString();
 
-    await db
-      .insertInto("links")
-      .values({ address, target, expired_at })
-      .executeTakeFirstOrThrow();
+      await db
+        .insertInto("links")
+        .values({ address, target, expired_at })
+        .executeTakeFirstOrThrow();
 
-    return reply.status(200).send({
-      link: `https://${domain}/${address}`,
-      expired_at,
-    });
-  },
-);
+      return reply.status(200).send({
+        link: `https://${domain}/${address}`,
+        expired_at,
+      });
+    },
+  );
+}
 
 // delay is the number of ms for the graceful close to finish
 const closeListeners = closeWithGrace({ delay: 500 }, ({ err }) => {
