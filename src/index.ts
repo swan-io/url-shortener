@@ -97,22 +97,28 @@ for (const path of ["/api/links", "/api/v2/links"]) {
       },
     },
     async (request, reply) => {
+      const { domain, target, expire_in } = request.body;
+
       if (request.headers["x-api-key"] !== env.API_KEY) {
         return reply.forbidden();
       }
-
-      const { domain, target, expire_in } = request.body;
-      const address = generateAddress();
 
       const expired_at = dayjs
         .utc()
         .add(parseDuration(expire_in) ?? inOneWeek)
         .toISOString();
 
-      await db
-        .insertInto("links")
-        .values({ address, target, expired_at })
-        .executeTakeFirstOrThrow();
+      const { address } = await retry(() =>
+        db
+          .insertInto("links")
+          .values({
+            address: generateAddress(),
+            target,
+            expired_at,
+          })
+          .returning("address")
+          .executeTakeFirstOrThrow(),
+      );
 
       return reply.status(200).send({
         link: `https://${domain}/${address}`,
