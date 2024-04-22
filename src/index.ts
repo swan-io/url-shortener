@@ -11,6 +11,7 @@ import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
 import { db, kuttDb } from "./database/db";
 import { generateAddress } from "./utils/address";
 import { env } from "./utils/env";
+import { retry } from "./utils/retry";
 import { parseDuration } from "./utils/time";
 
 const app = fastify({

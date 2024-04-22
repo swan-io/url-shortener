@@ -1,4 +1,4 @@
-const retry = <T>(
+export const retry = <T>(
   getPromise: () => Promise<T>,
   { attempts = 2 }: { attempts?: number } = {},
 ): Promise<T> => {
