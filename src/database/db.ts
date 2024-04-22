@@ -11,8 +11,19 @@ const dialect = new PostgresDialect({
   }),
 });
 
+// TODO: remove this once migration is done
+const kuttDialect = new PostgresDialect({
+  pool: new Pool({
+    connectionString: env.KUTT_DATABASE_URL,
+    min: 5,
+    max: 20,
+  }),
+});
+
 const kyselyGlobal = global as typeof global & {
   db?: Kysely<DB>;
+  // TODO: remove this once migration is done
+  kuttDb?: Kysely<DB>;
 };
 
 // workaround to make kysely work well during "yarn dev"
@@ -24,6 +35,16 @@ export const db =
     log: env.NODE_ENV === "development" ? ["query", "error"] : ["error"],
   });
 
+// TODO: remove this once migration is done
+export const kuttDb =
+  kyselyGlobal.kuttDb ??
+  new Kysely<DB>({
+    dialect: kuttDialect,
+    log: env.NODE_ENV === "development" ? ["query", "error"] : ["error"],
+  });
+
 if (env.NODE_ENV !== "production") {
   kyselyGlobal.db = db;
+  // TODO: remove this once migration is done
+  kyselyGlobal.kuttDb = kuttDb;
 }

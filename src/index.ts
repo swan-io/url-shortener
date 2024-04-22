@@ -8,9 +8,10 @@ import fastify from "fastify";
 import health from "fastify-healthcheck";
 import { sql } from "kysely";
 import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
-import { db } from "./database/db";
+import { db, kuttDb } from "./database/db";
 import { generateAddress } from "./utils/address";
 import { env } from "./utils/env";
+import { retry } from "./utils/retry";
 import { parseDuration } from "./utils/time";
 
 const app = fastify({
@@ -32,6 +33,11 @@ app.register(sensible);
 app.register(health, { healthcheckUrl: "/api/health" });
 app.register(schedule);
 
+// TODO: remove this once migration is done
+app.get("/api/v2/health", (_request, reply) => {
+  return reply.status(200).send("OK");
+});
+
 app.get<{ Params: { address: string } }>(
   "/:address",
   async (request, reply) => {
@@ -44,62 +50,84 @@ app.get<{ Params: { address: string } }>(
       .where(sql<boolean>`expired_at >= CURRENT_TIMESTAMP`)
       .executeTakeFirst();
 
-    return reply.redirect(302, result?.target ?? env.FALLBACK_URL);
+    if (result != null) {
+      return reply.redirect(302, result.target ?? env.FALLBACK_URL);
+    }
+
+    // TODO: remove this once migration is done
+    const kuttResult = await kuttDb
+      .selectFrom("links")
+      .select("target")
+      .where("address", "=", address)
+      .where(
+        sql<boolean>`(expire_in IS NULL OR expire_in >= CURRENT_TIMESTAMP)`,
+      )
+      .executeTakeFirst();
+
+    return reply.redirect(302, kuttResult?.target ?? env.FALLBACK_URL);
   },
 );
 
 const LinksBody = Type.Object({
+  domain: Type.String({ format: "hostname" }),
   target: Type.String({ format: "uri" }),
   expire_in: Type.Optional(Type.String()),
 });
 
 const LinksReply = Type.Object({
-  address: Type.String(),
-  target: Type.String({ format: "uri" }),
+  link: Type.String({ format: "uri" }),
   expired_at: Type.String(),
 });
 
 const inOneWeek = dayjs.duration(1, "week");
 
-app.post<{
-  Headers: { "X-API-Key"?: string };
-  Body: Static<typeof LinksBody>;
-  Reply: Static<typeof LinksReply>;
-}>(
-  "/api/links",
-  {
-    schema: {
-      body: LinksBody,
-      response: {
-        200: LinksReply,
+// TODO: remove /api/v2/links once migration is done
+for (const path of ["/api/links", "/api/v2/links"]) {
+  app.post<{
+    Headers: { "X-API-Key"?: string };
+    Body: Static<typeof LinksBody>;
+    Reply: Static<typeof LinksReply>;
+  }>(
+    path,
+    {
+      schema: {
+        body: LinksBody,
+        response: {
+          200: LinksReply,
+        },
       },
     },
-  },
-  async (request, reply) => {
-    if (request.headers["x-api-key"] !== env.API_KEY) {
-      return reply.forbidden();
-    }
+    async (request, reply) => {
+      const { domain, target, expire_in } = request.body;
 
-    const { target, expire_in } = request.body;
-    const address = generateAddress();
+      if (request.headers["x-api-key"] !== env.API_KEY) {
+        return reply.forbidden();
+      }
 
-    const expired_at = dayjs
-      .utc()
-      .add(parseDuration(expire_in) ?? inOneWeek)
-      .toISOString();
+      const expired_at = dayjs
+        .utc()
+        .add(parseDuration(expire_in) ?? inOneWeek)
+        .toISOString();
 
-    await db
-      .insertInto("links")
-      .values({ address, target, expired_at })
-      .executeTakeFirstOrThrow();
+      const { address } = await retry(() =>
+        db
+          .insertInto("links")
+          .values({
+            address: generateAddress(),
+            target,
+            expired_at,
+          })
+          .returning("address")
+          .executeTakeFirstOrThrow(),
+      );
 
-    return reply.status(200).send({
-      address,
-      target,
-      expired_at,
-    });
-  },
-);
+      return reply.status(200).send({
+        link: `https://${domain}/${address}`,
+        expired_at,
+      });
+    },
+  );
+}
 
 // delay is the number of ms for the graceful close to finish
 const closeListeners = closeWithGrace({ delay: 500 }, ({ err }) => {
