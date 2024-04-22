@@ -49,13 +49,13 @@ app.get<{ Params: { address: string } }>(
 );
 
 const LinksBody = Type.Object({
+  domain: Type.String({ format: "hostname" }),
   target: Type.String({ format: "uri" }),
   expire_in: Type.Optional(Type.String()),
 });
 
 const LinksReply = Type.Object({
-  address: Type.String(),
-  target: Type.String({ format: "uri" }),
+  link: Type.String({ format: "uri" }),
   expired_at: Type.String(),
 });
 
@@ -80,7 +80,7 @@ app.post<{
       return reply.forbidden();
     }
 
-    const { target, expire_in } = request.body;
+    const { domain, target, expire_in } = request.body;
     const address = generateAddress();
 
     const expired_at = dayjs
@@ -94,8 +94,7 @@ app.post<{
       .executeTakeFirstOrThrow();
 
     return reply.status(200).send({
-      address,
-      target,
+      link: `https://${domain}/${address}`,
       expired_at,
     });
   },
