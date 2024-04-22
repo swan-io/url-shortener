@@ -15,5 +15,8 @@ export const env = validate({
     DATABASE_URL: string,
     FALLBACK_URL: url,
     SERVER_PORT: number,
+
+    // TODO: remove this once migration is done
+    KUTT_DATABASE_URL: string,
   },
 });
