@@ -18,6 +18,7 @@
     "clean": "rm -rf dist src/database/generated",
     "codegen": "prisma generate",
     "dev": "yarn codegen && tsx watch --clear-screen=false src",
+    "dump-schema": "prisma migrate diff --from-empty --to-schema-datasource src/database/schema.prisma --script > tests/schema.sql",
     "format": "prettier '**/*' -u -w && prisma format",
     "lint": "biome check . --files-ignore-unknown=true --no-errors-on-unmatched",
     "migrate": "prisma migrate dev",
