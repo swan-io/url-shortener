@@ -1,14 +1,9 @@
 export const retry = <T>(
+  maxAttempts: number,
   getPromise: () => Promise<T>,
-  { attempts = 2 }: { attempts?: number } = {},
-): Promise<T> => {
-  const safeAttempts = Math.max(attempts, 1);
-
-  return getPromise().catch(async (error: unknown) =>
-    safeAttempts === 1
-      ? Promise.reject(error)
-      : retry(getPromise, {
-          attempts: safeAttempts - 1,
-        }),
+): Promise<T> =>
+  getPromise().catch((error) =>
+    maxAttempts > 1
+      ? retry(maxAttempts - 1, getPromise)
+      : Promise.reject(error),
   );
-};

@@ -112,7 +112,7 @@ for (const path of ["/api/links", "/api/v2/links"]) {
         .add(parseDuration(expire_in) ?? oneWeek)
         .toISOString();
 
-      const { address } = await retry(() =>
+      const { address } = await retry(2, () =>
         db
           .insertInto("links")
           .values({

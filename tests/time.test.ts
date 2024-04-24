@@ -18,8 +18,8 @@ const parse = (value: string | undefined) => {
   }
 };
 
-test("parseDuration", () => {
-  expect(parse(undefined)).toStrictEqual(undefined);
+test("duration is correctly parsed", () => {
+  expect(parse(undefined)).toBe(undefined);
 
   expect(parse("1 hour")).toStrictEqual({
     milliseconds: 0,

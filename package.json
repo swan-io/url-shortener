@@ -14,7 +14,7 @@
   "scripts": {
     "docker:up": "docker-compose up -d && yarn migrate",
     "docker:down": "docker-compose down -v",
-    "build": "yarn clean && prettier '**/*' -u -c && yarn lint && yarn codegen && tsc",
+    "build": "yarn clean && prettier '**/*' -u -c && yarn lint && yarn codegen && tsc -p tsconfig.build.json",
     "clean": "rm -rf dist src/database/generated",
     "codegen": "prisma generate",
     "dev": "yarn codegen && tsx watch --clear-screen=false src",
@@ -66,6 +66,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.7.1",
+    "@electric-sql/pglite": "0.1.5",
     "@types/node": "20.12.7",
     "@types/pg": "8.11.5",
     "prettier": "3.2.5",
