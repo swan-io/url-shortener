@@ -19,6 +19,9 @@
     "lint": "biome check . --files-ignore-unknown=true --no-errors-on-unmatched",
     "migrate": "prisma migrate dev",
     "start": "node dist",
+    "test": "vitest run",
+    "docker:up": "docker-compose up -d && yarn migrate",
+    "docker:down": "docker-compose down -v",
     "typecheck": "tsc --noEmit"
   },
   "prettier": {
@@ -67,6 +70,7 @@
     "prettier": "3.2.5",
     "prettier-plugin-organize-imports": "3.2.4",
     "tsx": "4.7.2",
-    "typescript": "5.4.5"
+    "typescript": "5.4.5",
+    "vitest": "1.5.1"
   }
 }
