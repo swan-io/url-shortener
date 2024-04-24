@@ -5,7 +5,6 @@ import sensible from "@fastify/sensible";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { Static, Type } from "@sinclair/typebox";
 import closeWithGrace from "close-with-grace";
-import dayjs from "dayjs";
 import fastify from "fastify";
 import health from "fastify-healthcheck";
 import { sql } from "kysely";
@@ -82,8 +81,6 @@ const LinksReply = Type.Object({
   expired_at: Type.String(),
 });
 
-const oneWeek = dayjs.duration(1, "week");
-
 // TODO: remove /api/v2/links once migration is done
 for (const path of ["/api/links", "/api/v2/links"]) {
   app.post<{
@@ -107,7 +104,7 @@ for (const path of ["/api/links", "/api/v2/links"]) {
         return reply.forbidden();
       }
 
-      const expired_at = addToNow(expire_in, oneWeek);
+      const expired_at = addToNow(expire_in);
 
       const { address } = await retry(2, () =>
         db

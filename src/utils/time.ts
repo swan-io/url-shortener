@@ -1,6 +1,6 @@
 import { Dict } from "@swan-io/boxed";
 import dayjs from "dayjs";
-import duration, { Duration, DurationUnitType } from "dayjs/plugin/duration";
+import duration, { DurationUnitType } from "dayjs/plugin/duration";
 import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
@@ -43,6 +43,7 @@ const units = deriveUnion({
   y: null, // years
 } satisfies Record<Exclude<DurationUnitType, "D">, null>);
 
+const oneWeek = dayjs.duration(1, "week");
 const regExp = new RegExp(`^(\\d+(?:\\.\\d+)?) *(${units.array.join("|")})$`);
 
 export const parseDuration = (value: string | undefined) => {
@@ -58,7 +59,7 @@ export const parseDuration = (value: string | undefined) => {
   }
 };
 
-export const addToNow = (value: string | undefined, fallback: Duration) => {
+export const addToNow = (value: string | undefined, fallback = oneWeek) => {
   const duration = parseDuration(value);
 
   return dayjs
