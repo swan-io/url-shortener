@@ -7,11 +7,9 @@ import { Static, Type } from "@sinclair/typebox";
 import closeWithGrace from "close-with-grace";
 import fastify from "fastify";
 import health from "fastify-healthcheck";
-import { sql } from "kysely";
 import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
-import { db } from "./database/db";
-import { kuttDb } from "./database/kuttDb";
-import { generateAddress } from "./utils/address";
+import { createLink, deleteExpiredLinks, getLink } from "./database/db";
+import { getKuttLink } from "./database/kuttDb";
 import { env } from "./utils/env";
 import { retry } from "./utils/retry";
 import { addToNow } from "./utils/time";
@@ -44,29 +42,15 @@ app.get<{ Params: { address: string } }>(
   "/:address",
   async (request, reply) => {
     const { address } = request.params;
+    const link = await getLink(address);
 
-    const result = await db
-      .selectFrom("links")
-      .select("target")
-      .where("address", "=", address)
-      .where(sql<boolean>`expired_at >= CURRENT_TIMESTAMP`)
-      .executeTakeFirst();
-
-    if (result != null) {
-      return reply.redirect(302, result.target ?? env.FALLBACK_URL);
+    if (link != null) {
+      return reply.redirect(302, link.target);
     }
 
     // TODO: remove this once migration is done
-    const kuttResult = await kuttDb
-      .selectFrom("links")
-      .select("target")
-      .where("address", "=", address)
-      .where(
-        sql<boolean>`(expire_in IS NULL OR expire_in >= CURRENT_TIMESTAMP)`,
-      )
-      .executeTakeFirst();
-
-    return reply.redirect(302, kuttResult?.target ?? env.FALLBACK_URL);
+    const kuttLink = await getKuttLink(address);
+    return reply.redirect(302, kuttLink?.target ?? env.FALLBACK_URL);
   },
 );
 
@@ -108,15 +92,10 @@ for (const path of ["/api/links", "/api/v2/links"]) {
       const expired_at = addToNow(expire_in);
 
       const { address } = await retry(2, () =>
-        db
-          .insertInto("links")
-          .values({
-            address: generateAddress(),
-            target,
-            expired_at,
-          })
-          .returning("address")
-          .executeTakeFirstOrThrow(),
+        createLink({
+          target,
+          expired_at,
+        }),
       );
 
       return reply.status(200).send({
@@ -161,12 +140,8 @@ app.ready().then(() => {
     new SimpleIntervalJob(
       { hours: 1 },
       new AsyncTask(
-        "clean expired links",
-        () =>
-          db
-            .deleteFrom("links")
-            .where(sql<boolean>`expired_at < CURRENT_TIMESTAMP`)
-            .executeTakeFirstOrThrow(),
+        "delete expired links",
+        () => deleteExpiredLinks(),
         (err) => {
           app.log.error(err);
         },

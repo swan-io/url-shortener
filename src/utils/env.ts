@@ -19,4 +19,9 @@ export const env = validate({
     // TODO: remove this once migration is done
     KUTT_DATABASE_URL: string,
   },
+  overrides: {
+    ...(process.env.NODE_ENV === "test" && {
+      DATABASE_URL: "postgresql://postgres:pgmock@localhost:25432",
+    }),
+  },
 });

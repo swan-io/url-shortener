@@ -1,5 +1,6 @@
-import { Kysely, PostgresDialect } from "kysely";
+import { Kysely, PostgresDialect, sql } from "kysely";
 import { Pool } from "pg";
+import { generateAddress } from "../utils/address";
 import { env } from "../utils/env";
 import { DB } from "./generated/types";
 
@@ -27,3 +28,24 @@ export const db =
 if (env.NODE_ENV !== "production") {
   kyselyGlobal.db = db;
 }
+
+export const getLink = (address: string) =>
+  db
+    .selectFrom("links")
+    .select("target")
+    .where("address", "=", address)
+    .where(sql<boolean>`expired_at >= CURRENT_TIMESTAMP`)
+    .executeTakeFirst();
+
+export const createLink = (input: { target: string; expired_at: string }) =>
+  db
+    .insertInto("links")
+    .values({ ...input, address: generateAddress() })
+    .returning(["address"])
+    .executeTakeFirstOrThrow();
+
+export const deleteExpiredLinks = () =>
+  db
+    .deleteFrom("links")
+    .where(sql<boolean>`expired_at < CURRENT_TIMESTAMP`)
+    .executeTakeFirstOrThrow();

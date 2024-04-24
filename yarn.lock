@@ -2635,6 +2635,11 @@ pg@8.11.5:
   optionalDependencies:
     pg-cloudflare "^1.1.1"
 
+pgmock@1.0.2:
+  version "1.0.2"
+  resolved "https://registry.npmjs.org/pgmock/-/pgmock-1.0.2.tgz#883f2322310501eae85838b2622898527bb5f415"
+  integrity sha512-U6ooXrTSfR96RRjoh/Bjjrt/UZVZPhI/WP7KJeDAZG8XfyL53VtqCZZ+xwk0a4z8mBmqcDrp5Vrdc09MHuS/gg==
+
 pgpass@1.x:
   version "1.0.5"
   resolved "https://registry.npmjs.org/pgpass/-/pgpass-1.0.5.tgz#9b873e4a564bb10fa7a7dbd55312728d422a223d"

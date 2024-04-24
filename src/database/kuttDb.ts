@@ -1,6 +1,6 @@
 // TODO: remove this file once migration is done
 
-import { Kysely, PostgresDialect } from "kysely";
+import { Kysely, PostgresDialect, sql } from "kysely";
 import { Pool } from "pg";
 import { env } from "../utils/env";
 import { DB } from "./generated/types";
@@ -19,7 +19,7 @@ const kyselyGlobal = global as typeof global & {
 
 // workaround to make kysely work well during "yarn dev"
 // @see https://www.prisma.io/docs/support/help-articles/nextjs-prisma-client-dev-practices
-export const kuttDb =
+const kuttDb =
   kyselyGlobal.kuttDb ??
   new Kysely<DB>({
     dialect,
@@ -29,3 +29,11 @@ export const kuttDb =
 if (env.NODE_ENV !== "production") {
   kyselyGlobal.kuttDb = kuttDb;
 }
+
+export const getKuttLink = (address: string) =>
+  kuttDb
+    .selectFrom("links")
+    .select("target")
+    .where("address", "=", address)
+    .where(sql<boolean>`(expire_in IS NULL OR expire_in >= CURRENT_TIMESTAMP)`)
+    .executeTakeFirst();
