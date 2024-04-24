@@ -15,14 +15,14 @@ const deriveUnion = <T extends PropertyKey>(object: Record<T, null>) => {
 
 // https://day.js.org/docs/en/durations/creating#list-of-all-available-units
 const units = deriveUnion({
-  ms: null, // milliseconds
-  s: null, // seconds
-  m: null, // minutes
-  h: null, // hours
-  d: null, // days
-  w: null, // weeks
-  M: null, // months
-  y: null, // years
+  milliseconds: null,
+  seconds: null,
+  minutes: null,
+  hours: null,
+  days: null,
+  weeks: null,
+  months: null,
+  years: null,
 
   millisecond: null,
   second: null,
@@ -33,17 +33,17 @@ const units = deriveUnion({
   month: null,
   year: null,
 
-  milliseconds: null,
-  seconds: null,
-  minutes: null,
-  hours: null,
-  days: null,
-  weeks: null,
-  months: null,
-  years: null,
+  ms: null, // milliseconds
+  s: null, // seconds
+  m: null, // minutes
+  h: null, // hours
+  d: null, // days
+  w: null, // weeks
+  M: null, // months
+  y: null, // years
 } satisfies Record<Exclude<DurationUnitType, "D">, null>);
 
-const regExp = new RegExp(`(\\d+(?:\\.\\d+)?) *(${units.array.join("|")})`);
+const regExp = new RegExp(`^(\\d+(?:\\.\\d+)?) *(${units.array.join("|")})$`);
 
 export const parseDuration = (value: string | undefined) => {
   const match = value?.trim().match(regExp);

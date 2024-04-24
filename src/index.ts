@@ -82,7 +82,7 @@ const LinksReply = Type.Object({
   expired_at: Type.String(),
 });
 
-const inOneWeek = dayjs.duration(1, "week");
+const oneWeek = dayjs.duration(1, "week");
 
 // TODO: remove /api/v2/links once migration is done
 for (const path of ["/api/links", "/api/v2/links"]) {
@@ -109,7 +109,7 @@ for (const path of ["/api/links", "/api/v2/links"]) {
 
       const expired_at = dayjs
         .utc()
-        .add(parseDuration(expire_in) ?? inOneWeek)
+        .add(parseDuration(expire_in) ?? oneWeek)
         .toISOString();
 
       const { address } = await retry(() =>
