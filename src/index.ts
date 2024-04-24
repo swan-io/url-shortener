@@ -1,3 +1,5 @@
+import "./tracing";
+
 import schedule from "@fastify/schedule";
 import sensible from "@fastify/sensible";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
