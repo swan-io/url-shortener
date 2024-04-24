@@ -12,16 +12,17 @@
     "url": "https://github.com/swan-io/url-shortener"
   },
   "scripts": {
-    "build": "yarn clean && prettier '**/*' -u -c && yarn lint && tsc",
-    "clean": "rm -rf dist",
-    "dev": "tsx watch --clear-screen=false src",
+    "docker:up": "docker-compose up -d && yarn migrate",
+    "docker:down": "docker-compose down -v",
+    "build": "yarn clean && prettier '**/*' -u -c && yarn lint && yarn codegen && tsc",
+    "clean": "rm -rf dist src/database/generated",
+    "codegen": "prisma generate",
+    "dev": "yarn codegen && tsx watch --clear-screen=false src",
     "format": "prettier '**/*' -u -w && prisma format",
     "lint": "biome check . --files-ignore-unknown=true --no-errors-on-unmatched",
     "migrate": "prisma migrate dev",
     "start": "node dist",
     "test": "vitest run",
-    "docker:up": "docker-compose up -d && yarn migrate",
-    "docker:down": "docker-compose down -v",
     "typecheck": "tsc --noEmit"
   },
   "prettier": {
