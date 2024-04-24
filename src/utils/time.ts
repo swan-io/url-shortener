@@ -1,6 +1,6 @@
 import { Dict } from "@swan-io/boxed";
 import dayjs from "dayjs";
-import duration, { DurationUnitType } from "dayjs/plugin/duration";
+import duration, { Duration, DurationUnitType } from "dayjs/plugin/duration";
 import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
@@ -56,4 +56,13 @@ export const parseDuration = (value: string | undefined) => {
       return dayjs.duration(number, unit);
     }
   }
+};
+
+export const addToNow = (value: string | undefined, fallback: Duration) => {
+  const duration = parseDuration(value);
+
+  return dayjs
+    .utc()
+    .add(duration ?? fallback)
+    .toISOString();
 };

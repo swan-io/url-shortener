@@ -14,7 +14,7 @@ import { db, kuttDb } from "./database/db";
 import { generateAddress } from "./utils/address";
 import { env } from "./utils/env";
 import { retry } from "./utils/retry";
-import { parseDuration } from "./utils/time";
+import { addToNow } from "./utils/time";
 
 const app = fastify({
   logger: {
@@ -107,10 +107,7 @@ for (const path of ["/api/links", "/api/v2/links"]) {
         return reply.forbidden();
       }
 
-      const expired_at = dayjs
-        .utc()
-        .add(parseDuration(expire_in) ?? oneWeek)
-        .toISOString();
+      const expired_at = addToNow(expire_in, oneWeek);
 
       const { address } = await retry(2, () =>
         db
