@@ -7,7 +7,7 @@ import { afterEach, beforeAll, expect, test } from "vitest";
 import { generateAddress } from "../src/utils/address";
 import { env } from "../src/utils/env";
 
-const serverUrl = `http://0.0.0.0:4000/${env.SERVER_PORT}`;
+const serverUrl = `http://0.0.0.0:${env.SERVER_PORT}`;
 const timeout = 30000;
 
 const past = dayjs("01/01/1970").toISOString();
@@ -77,8 +77,10 @@ afterEach(async () => {
   await db.deleteFrom("links").executeTakeFirstOrThrow();
 }, timeout);
 
-test.skip("correctly insert and get a link", { timeout }, async () => {
-  const response = await fetch(new Request(serverUrl, { redirect: "manual" }));
+test("redirect to fallback url", { timeout }, async () => {
+  const response = await fetch(
+    new Request(`${serverUrl}/unknown`, { redirect: "manual" }),
+  );
 
   expect(response.status).toBe(302);
   expect(response.headers.get("location")).toBe(env.FALLBACK_URL);
