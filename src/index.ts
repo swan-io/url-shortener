@@ -5,16 +5,18 @@ import sensible from "@fastify/sensible";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { Static, Type } from "@sinclair/typebox";
 import closeWithGrace from "close-with-grace";
+import dayjs from "dayjs";
 import fastify from "fastify";
 import health from "fastify-healthcheck";
+import { sql } from "kysely";
 import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
-import { createLink, deleteExpiredLinks, getLink } from "./database/db";
-import { getKuttLink } from "./database/kuttDb";
+import { db, kuttDb } from "./database/db";
+import { generateAddress } from "./utils/address";
 import { env } from "./utils/env";
 import { retry } from "./utils/retry";
-import { addToNow } from "./utils/time";
+import { parseDuration } from "./utils/time";
 
-const app = fastify({
+export const app = fastify({
   logger: {
     level: env.LOG_LEVEL,
     redact: {
@@ -33,7 +35,6 @@ app.register(sensible);
 app.register(health, { healthcheckUrl: "/api/health" });
 app.register(schedule);
 
-// TODO: remove this once migration is done
 app.get("/api/v2/health", (_request, reply) => {
   return reply.status(200).send("OK");
 });
@@ -42,14 +43,27 @@ app.get<{ Params: { address: string } }>(
   "/:address",
   async (request, reply) => {
     const { address } = request.params;
-    const link = await getLink(address);
+
+    const link = await db
+      .selectFrom("links")
+      .select("target")
+      .where("address", "=", address)
+      .where(sql<boolean>`expired_at >= CURRENT_TIMESTAMP`)
+      .executeTakeFirst();
 
     if (link != null) {
       return reply.redirect(302, link.target);
     }
 
-    // TODO: remove this once migration is done
-    const kuttLink = await getKuttLink(address);
+    const kuttLink = await kuttDb
+      .selectFrom("links")
+      .select("target")
+      .where("address", "=", address)
+      .where(
+        sql<boolean>`(expire_in IS NULL OR expire_in >= CURRENT_TIMESTAMP)`,
+      )
+      .executeTakeFirst();
+
     return reply.redirect(302, kuttLink?.target ?? env.FALLBACK_URL);
   },
 );
@@ -65,6 +79,8 @@ const LinksReply = Type.Object({
   address: Type.String(),
   expired_at: Type.String(),
 });
+
+const oneWeek = dayjs.duration(1, "week");
 
 // TODO: remove /api/v2/links once migration is done
 for (const path of ["/api/links", "/api/v2/links"]) {
@@ -89,13 +105,21 @@ for (const path of ["/api/links", "/api/v2/links"]) {
         return reply.forbidden();
       }
 
-      const expired_at = addToNow(expire_in);
+      const expired_at = dayjs
+        .utc()
+        .add(parseDuration(expire_in) ?? oneWeek)
+        .toISOString();
 
       const { address } = await retry(2, () =>
-        createLink({
-          target,
-          expired_at,
-        }),
+        db
+          .insertInto("links")
+          .values({
+            address: generateAddress(),
+            target,
+            expired_at,
+          })
+          .returning(["address"])
+          .executeTakeFirstOrThrow(),
       );
 
       return reply.status(200).send({
@@ -135,13 +159,19 @@ app.listen(
   },
 );
 
+export const cleanExpiredLinks = () =>
+  db
+    .deleteFrom("links")
+    .where(sql<boolean>`expired_at < CURRENT_TIMESTAMP`)
+    .executeTakeFirstOrThrow();
+
 app.ready().then(() => {
   app.scheduler.addSimpleIntervalJob(
     new SimpleIntervalJob(
       { hours: 1 },
       new AsyncTask(
-        "delete expired links",
-        () => deleteExpiredLinks(),
+        "clean expired links",
+        () => cleanExpiredLinks(),
         (err) => {
           app.log.error(err);
         },

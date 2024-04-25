@@ -9,7 +9,7 @@ datasource db {
   extensions = [pgcrypto]
 }
 
-model User {
+model Link {
   id         String   @id @default(dbgenerated("gen_random_uuid()"))
   address    String   @unique
   target     String
