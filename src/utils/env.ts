@@ -10,7 +10,7 @@ export const env = validate({
   env: process.env,
   validators: {
     NODE_ENV: oneOf("development", "test", "production"),
-    LOG_LEVEL: oneOf("debug", "info", "warn", "error", "fatal"),
+    LOG_LEVEL: oneOf("silent", "debug", "info", "warn", "error", "fatal"),
     API_KEY: string,
     DATABASE_URL: string,
     FALLBACK_URL: url,
@@ -21,6 +21,7 @@ export const env = validate({
   },
   overrides: {
     ...(process.env.NODE_ENV === "test" && {
+      LOG_LEVEL: "silent",
       DATABASE_URL: "postgresql://postgres:pgmock@localhost:25432",
       // TODO: remove after migration
       KUTT_DATABASE_URL: "postgresql://postgres:pgmock@localhost:35432",

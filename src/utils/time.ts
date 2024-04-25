@@ -38,10 +38,11 @@ const units = deriveUnion({
   m: null, // minutes
   h: null, // hours
   d: null, // days
+  D: null, // days
   w: null, // weeks
   M: null, // months
   y: null, // years
-} satisfies Record<Exclude<DurationUnitType, "D">, null>);
+} satisfies Record<DurationUnitType, null>);
 
 const regExp = new RegExp(`^(\\d+(?:\\.\\d+)?) *(${units.array.join("|")})$`);
 

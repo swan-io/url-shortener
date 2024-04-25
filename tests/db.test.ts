@@ -10,12 +10,18 @@ import { env } from "../src/utils/env";
 const serverUrl = `http://0.0.0.0:${env.SERVER_PORT}`;
 const timeout = 30000;
 
+const addressRegExp = /^[0-9A-Z]{6,}$/i;
+const isoDateRegExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+
 const past = dayjs("01/01/1970").toISOString();
 const future = dayjs("01/01/2070").toISOString();
 
+const boxedRepositoryTarget = "https://github.com/@swan-io/boxed";
+const chicaneRepositoryTarget = "https://github.com/@swan-io/chicane";
 const kuttRepositoryTarget = "https://github.com/thedevs-network/kutt";
-const kuttRepositoryAddress = generateAddress();
 const valienvRepositoryTarget = "https://github.com/zoontek/valienv";
+
+const kuttRepositoryAddress = generateAddress();
 const valienvRepositoryAddress = generateAddress();
 
 const kuttSchema = sql`
@@ -49,13 +55,13 @@ beforeAll(async () => {
     .insertInto("links")
     .values([
       {
-        target: kuttRepositoryTarget,
         address: kuttRepositoryAddress,
+        target: kuttRepositoryTarget,
         expire_in: future,
       },
       {
-        target: valienvRepositoryTarget,
         address: valienvRepositoryAddress,
+        target: valienvRepositoryTarget,
         expire_in: past,
       },
     ])
@@ -77,51 +83,158 @@ afterEach(async () => {
   await db.deleteFrom("links").executeTakeFirstOrThrow();
 }, timeout);
 
-test("redirect to fallback url", { timeout }, async () => {
-  const response = await fetch(
-    new Request(`${serverUrl}/unknown`, { redirect: "manual" }),
-  );
+test("correctly create a link without domain", { timeout }, async () => {
+  const response = await fetch(`${serverUrl}/api/links`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-API-Key": env.API_KEY,
+    },
+    body: JSON.stringify({
+      target: chicaneRepositoryTarget,
+    }),
+  });
+
+  expect(response.status).toBe(200);
+
+  // biome-ignore lint/suspicious/noExplicitAny:
+  const json: any = await response.json();
+
+  expect(json).toHaveProperty("address");
+  expect(json).toHaveProperty("expired_at");
+  expect(json).not.toHaveProperty("link");
+
+  expect(json.address).toMatch(addressRegExp);
+  expect(json.expired_at).toMatch(isoDateRegExp);
+
+  const redirect = await fetch(`${serverUrl}/${json.address}`, {
+    redirect: "manual",
+  });
+
+  expect(redirect.status).toBe(302);
+  expect(redirect.headers.get("location")).toBe(chicaneRepositoryTarget);
+});
+
+test("correctly create a link with domain", { timeout }, async () => {
+  const response = await fetch(`${serverUrl}/api/links`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-API-Key": env.API_KEY,
+    },
+    body: JSON.stringify({
+      target: chicaneRepositoryTarget,
+      domain: "swan.io",
+    }),
+  });
+
+  expect(response.status).toBe(200);
+
+  // biome-ignore lint/suspicious/noExplicitAny:
+  const json: any = await response.json();
+
+  expect(json).toHaveProperty("address");
+  expect(json).toHaveProperty("expired_at");
+  expect(json).toHaveProperty("link");
+
+  const url = new URL(json.link);
+
+  expect(url.hostname).toBe("swan.io");
+  expect(url.pathname.substring(1)).toMatch(addressRegExp);
+});
+
+test("returns unauthorized if no api key provided", { timeout }, async () => {
+  const response = await fetch(`${serverUrl}/api/links`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      target: chicaneRepositoryTarget,
+    }),
+  });
+
+  expect(response.status).toBe(401);
+
+  // biome-ignore lint/suspicious/noExplicitAny:
+  const json: any = await response.json();
+
+  expect(json).toStrictEqual({
+    statusCode: 401,
+    error: "Unauthorized",
+    message: "Unauthorized",
+  });
+});
+
+test("redirect to fallback url when no target found", { timeout }, async () => {
+  const response = await fetch(`${serverUrl}/unknown`, {
+    redirect: "manual",
+  });
 
   expect(response.status).toBe(302);
   expect(response.headers.get("location")).toBe(env.FALLBACK_URL);
-
-  // const { createLink, getLink } = await import("../src/database/db");
-
-  // const { address } = await createLink({
-  //   target: "https://swan.io",
-  //   expired_at: addToNow("1h"),
-  // });
-
-  // const link = await getLink(address);
-  // expect(link?.target).toBe("https://swan.io");
 });
 
-// test.skip("don't return an expired link", { timeout }, async () => {
-//   const { createLink, getLink } = await import("../src/database/db");
+test("return a target from kutt database when found", { timeout }, async () => {
+  const response = await fetch(`${serverUrl}/${kuttRepositoryAddress}`, {
+    redirect: "manual",
+  });
 
-//   const { address } = await createLink({
-//     target: "https://swan.io",
-//     expired_at: past,
-//   });
+  expect(response.status).toBe(302);
+  expect(response.headers.get("location")).toBe(kuttRepositoryTarget);
+});
 
-//   const link = await getLink(address);
-//   expect(link).toBeUndefined();
-// });
+test("don't return an expired link", { timeout }, async () => {
+  const { db } = await import("../src/database/db");
 
-// test("delete expired links", { timeout }, async () => {
-//   const { createLink } = await import("../src/database/db");
+  const { address } = await db
+    .insertInto("links")
+    .values({
+      target: chicaneRepositoryTarget,
+      address: generateAddress(),
+      expired_at: past,
+    })
+    .returning("address")
+    .executeTakeFirstOrThrow();
 
-//   await Promise.all([
-//     createLink({
-//       target: "https://swan.io",
-//       expired_at: past,
-//     }),
-//     createLink({
-//       target: "https://swan.io",
-//       expired_at: future,
-//     }),
-//   ]);
+  const response = await fetch(`${serverUrl}/${address}`, {
+    redirect: "manual",
+  });
 
-//   const { numDeletedRows } = await deleteExpiredLinks();
-//   expect(numDeletedRows).toBe(BigInt(1));
-// });
+  expect(response.status).toBe(302);
+  expect(response.headers.get("location")).toBe(env.FALLBACK_URL);
+});
+
+test("don't return a kutt expired link", { timeout }, async () => {
+  const response = await fetch(`${serverUrl}/${valienvRepositoryAddress}`, {
+    redirect: "manual",
+  });
+
+  expect(response.status).toBe(302);
+  expect(response.headers.get("location")).toBe(env.FALLBACK_URL);
+});
+
+test("clean expired links", { timeout }, async () => {
+  const { cleanExpiredLinks } = await import("../src");
+  const { db } = await import("../src/database/db");
+
+  await db
+    .insertInto("links")
+    .values([
+      {
+        address: generateAddress(),
+        target: boxedRepositoryTarget,
+        expired_at: past,
+      },
+      {
+        address: generateAddress(),
+        target: chicaneRepositoryTarget,
+        expired_at: future,
+      },
+    ])
+    .returning("address")
+    .executeTakeFirstOrThrow();
+
+  const { numDeletedRows } = await cleanExpiredLinks();
+  expect(numDeletedRows).toBe(BigInt(1));
+});

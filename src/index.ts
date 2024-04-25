@@ -76,9 +76,9 @@ const LinksBody = Type.Object({
 });
 
 const LinksReply = Type.Object({
-  link: Type.Optional(Type.String({ format: "uri" })),
   address: Type.String(),
   expired_at: Type.String(),
+  link: Type.Optional(Type.String({ format: "uri" })),
 });
 
 const oneWeek = dayjs.duration(1, "week");
@@ -100,11 +100,11 @@ for (const path of ["/api/links", "/api/v2/links"]) {
       },
     },
     async (request, reply) => {
-      const { domain, target, expire_in } = request.body;
-
       if (request.headers["x-api-key"] !== env.API_KEY) {
-        return reply.forbidden();
+        return reply.unauthorized();
       }
+
+      const { domain, target, expire_in } = request.body;
 
       const expired_at = dayjs
         .utc()

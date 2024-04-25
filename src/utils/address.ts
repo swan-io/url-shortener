@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 
-const regExp = /[^0-9a-z]/i;
+const regExp = /[^0-9A-Z]/gi;
 
 export const generateAddress = () =>
   crypto
