@@ -12,13 +12,18 @@
     "url": "https://github.com/swan-io/url-shortener"
   },
   "scripts": {
-    "build": "yarn clean && prettier '**/*' -u -c && yarn lint && tsc",
-    "clean": "rm -rf dist",
-    "dev": "tsx watch --clear-screen=false src",
+    "docker:up": "docker-compose up -d && yarn migrate",
+    "docker:down": "docker-compose down -v",
+    "build": "yarn clean && prettier '**/*' -u -c && yarn lint && yarn codegen && tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist src/database/generated",
+    "codegen": "prisma generate",
+    "dev": "yarn codegen && tsx watch --clear-screen=false src",
+    "dump-schema": "prisma migrate diff --from-empty --to-schema-datasource src/database/schema.prisma --script > tests/schema.sql",
     "format": "prettier '**/*' -u -w && prisma format",
     "lint": "biome check . --files-ignore-unknown=true --no-errors-on-unmatched",
     "migrate": "prisma migrate dev",
     "start": "node dist",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "prettier": {
@@ -64,9 +69,11 @@
     "@biomejs/biome": "1.7.1",
     "@types/node": "20.12.7",
     "@types/pg": "8.11.5",
+    "pgmock": "1.0.2",
     "prettier": "3.2.5",
     "prettier-plugin-organize-imports": "3.2.4",
     "tsx": "4.7.2",
-    "typescript": "5.4.5"
+    "typescript": "5.4.5",
+    "vitest": "1.5.1"
   }
 }

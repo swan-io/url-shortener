@@ -16,7 +16,7 @@ import { env } from "./utils/env";
 import { retry } from "./utils/retry";
 import { parseDuration } from "./utils/time";
 
-const app = fastify({
+export const app = fastify({
   logger: {
     level: env.LOG_LEVEL,
     redact: {
@@ -35,7 +35,7 @@ app.register(sensible);
 app.register(health, { healthcheckUrl: "/api/health" });
 app.register(schedule);
 
-// TODO: remove this once migration is done
+// TODO: remove after migration
 app.get("/api/v2/health", (_request, reply) => {
   return reply.status(200).send("OK");
 });
@@ -45,19 +45,18 @@ app.get<{ Params: { address: string } }>(
   async (request, reply) => {
     const { address } = request.params;
 
-    const result = await db
+    const link = await db
       .selectFrom("links")
       .select("target")
       .where("address", "=", address)
       .where(sql<boolean>`expired_at >= CURRENT_TIMESTAMP`)
       .executeTakeFirst();
 
-    if (result != null) {
-      return reply.redirect(302, result.target ?? env.FALLBACK_URL);
+    if (link != null) {
+      return reply.redirect(302, link.target);
     }
 
-    // TODO: remove this once migration is done
-    const kuttResult = await kuttDb
+    const kuttLink = await kuttDb
       .selectFrom("links")
       .select("target")
       .where("address", "=", address)
@@ -66,7 +65,7 @@ app.get<{ Params: { address: string } }>(
       )
       .executeTakeFirst();
 
-    return reply.redirect(302, kuttResult?.target ?? env.FALLBACK_URL);
+    return reply.redirect(302, kuttLink?.target ?? env.FALLBACK_URL);
   },
 );
 
@@ -77,14 +76,14 @@ const LinksBody = Type.Object({
 });
 
 const LinksReply = Type.Object({
-  link: Type.Optional(Type.String({ format: "uri" })),
   address: Type.String(),
   expired_at: Type.String(),
+  link: Type.Optional(Type.String({ format: "uri" })),
 });
 
-const inOneWeek = dayjs.duration(1, "week");
+const oneWeek = dayjs.duration(1, "week");
 
-// TODO: remove /api/v2/links once migration is done
+// TODO: remove /api/v2/links after migration
 for (const path of ["/api/links", "/api/v2/links"]) {
   app.post<{
     Headers: { "X-API-Key"?: string };
@@ -101,18 +100,18 @@ for (const path of ["/api/links", "/api/v2/links"]) {
       },
     },
     async (request, reply) => {
-      const { domain, target, expire_in } = request.body;
-
       if (request.headers["x-api-key"] !== env.API_KEY) {
-        return reply.forbidden();
+        return reply.unauthorized();
       }
+
+      const { domain, target, expire_in } = request.body;
 
       const expired_at = dayjs
         .utc()
-        .add(parseDuration(expire_in) ?? inOneWeek)
+        .add(parseDuration(expire_in) ?? oneWeek)
         .toISOString();
 
-      const { address } = await retry(() =>
+      const { address } = await retry(2, () =>
         db
           .insertInto("links")
           .values({
@@ -161,17 +160,19 @@ app.listen(
   },
 );
 
+export const cleanExpiredLinks = () =>
+  db
+    .deleteFrom("links")
+    .where(sql<boolean>`expired_at < CURRENT_TIMESTAMP`)
+    .executeTakeFirstOrThrow();
+
 app.ready().then(() => {
   app.scheduler.addSimpleIntervalJob(
     new SimpleIntervalJob(
       { hours: 1 },
       new AsyncTask(
         "clean expired links",
-        () =>
-          db
-            .deleteFrom("links")
-            .where(sql<boolean>`expired_at < CURRENT_TIMESTAMP`)
-            .executeTakeFirstOrThrow(),
+        () => cleanExpiredLinks(),
         (err) => {
           app.log.error(err);
         },
