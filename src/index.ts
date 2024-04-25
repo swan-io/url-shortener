@@ -35,6 +35,7 @@ app.register(sensible);
 app.register(health, { healthcheckUrl: "/api/health" });
 app.register(schedule);
 
+// TODO: remove after migration
 app.get("/api/v2/health", (_request, reply) => {
   return reply.status(200).send("OK");
 });
@@ -82,7 +83,7 @@ const LinksReply = Type.Object({
 
 const oneWeek = dayjs.duration(1, "week");
 
-// TODO: remove /api/v2/links once migration is done
+// TODO: remove /api/v2/links after migration
 for (const path of ["/api/links", "/api/v2/links"]) {
   app.post<{
     Headers: { "X-API-Key"?: string };
@@ -118,7 +119,7 @@ for (const path of ["/api/links", "/api/v2/links"]) {
             target,
             expired_at,
           })
-          .returning(["address"])
+          .returning("address")
           .executeTakeFirstOrThrow(),
       );
 

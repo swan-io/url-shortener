@@ -16,11 +16,13 @@ export const env = validate({
     FALLBACK_URL: url,
     SERVER_PORT: number,
 
+    // TODO: remove after migration
     KUTT_DATABASE_URL: string,
   },
   overrides: {
     ...(process.env.NODE_ENV === "test" && {
       DATABASE_URL: "postgresql://postgres:pgmock@localhost:25432",
+      // TODO: remove after migration
       KUTT_DATABASE_URL: "postgresql://postgres:pgmock@localhost:35432",
     }),
   },
