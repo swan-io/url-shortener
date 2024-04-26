@@ -1,24 +1,45 @@
-# Getting Started with [Fastify-CLI](https://www.npmjs.com/package/fastify-cli)
+# Swan URL shortener
 
-This project was bootstrapped with Fastify-CLI.
+A demo of a Swan integration within a native app, built with React Native.
 
-## Available Scripts
+## Getting started
 
-In the project directory, you can run:
+You need to install [yarn](https://classic.yarnpkg.com/en/docs/install#mac-stable).
 
-### `npm run dev`
+### Clone
 
-To start the app in dev mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+```bash
+$ git clone git@github.com/swan-io/url-shortener.git
+```
 
-### `npm start`
+### Install
 
-For production mode
+```bash
+$ yarn
+```
 
-### `npm run test`
+### Environment variables
 
-Run the test cases.
+At the project root, you should find a `.env.example` file. Copy its contents to a new `.env` file.
 
-## Learn More
+## Development
 
-To learn Fastify, check out the [Fastify documentation](https://www.fastify.io/docs/latest/).
+To start developing, use the following command:
+
+```bash
+$ yarn dev
+```
+
+## Build
+
+```bash
+$ yarn build
+```
+
+## Testing
+
+```bash
+$ yarn test
+```
+
+We use [vitest](https://vitest.dev) and [pgmock](https://github.com/stackframe-projects/pgmock).
