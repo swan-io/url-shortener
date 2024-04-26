@@ -251,5 +251,5 @@ test("clean expired links", { timeout }, async () => {
   const { cleanExpiredLinks } = await import("../src");
   const { numDeletedRows } = await cleanExpiredLinks();
 
-  expect(numDeletedRows).toBe(Number(1));
+  expect(numDeletedRows).toBe(BigInt(1));
 });
