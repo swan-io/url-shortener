@@ -1,6 +1,6 @@
 # Swan URL shortener
 
-A demo of a Swan integration within a native app, built with React Native.
+An URL shortener server, with fallback to [kutt](https://github.com/thedevs-network/kutt) database.
 
 ## Getting started
 

@@ -1,6 +1,6 @@
 {
   "name": "@swan-io/url-shortener",
-  "description": "Swan url shortener service",
+  "description": "Swan URL shortener server",
   "version": "0.1.0",
   "license": "MIT",
   "engines": {
