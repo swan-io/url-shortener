@@ -1,20 +1,23 @@
 import dayjs from "dayjs";
-import { sql } from "kysely";
+import duration from "dayjs/plugin/duration";
+import utc from "dayjs/plugin/utc";
+import { Kysely, sql } from "kysely";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { PostgresMock } from "pgmock";
 import { afterEach, beforeAll, expect, test } from "vitest";
+import { LinksReply } from "../src/index";
 import { generateAddress } from "../src/utils/address";
 import { env } from "../src/utils/env";
+
+dayjs.extend(utc);
+dayjs.extend(duration);
 
 const serverUrl = `http://0.0.0.0:${env.SERVER_PORT}`;
 const timeout = 30000;
 
 const addressRegExp = /^[0-9A-Z]{6,}$/i;
 const isoDateRegExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
-
-const past = dayjs("01/01/1970").toISOString();
-const future = dayjs("01/01/2070").toISOString();
 
 const boxedRepositoryTarget = "https://github.com/@swan-io/boxed";
 const chicaneRepositoryTarget = "https://github.com/@swan-io/chicane";
@@ -31,6 +34,16 @@ CREATE TABLE "links" (
   "expire_in" TIMESTAMP(3) NOT NULL
 );
 `;
+
+// biome-ignore lint/suspicious/noExplicitAny:
+const getCurrentTimestamp = async (db: Kysely<any>) => {
+  const result = await db.executeQuery(
+    sql`SELECT CURRENT_TIMESTAMP`.compile(db),
+  );
+
+  const firstRow = result.rows[0] as { current_timestamp: string };
+  return firstRow.current_timestamp;
+};
 
 beforeAll(async () => {
   const [dbMock, kuttMock] = await Promise.all([
@@ -51,18 +64,20 @@ beforeAll(async () => {
     kuttDb.executeQuery(kuttSchema.compile(kuttDb)),
   ]);
 
+  const now = await getCurrentTimestamp(kuttDb);
+
   await kuttDb
     .insertInto("links")
     .values([
       {
         address: kuttRepositoryAddress,
         target: kuttRepositoryTarget,
-        expire_in: future,
+        expire_in: dayjs.utc(now).add(1, "day").toISOString(),
       },
       {
         address: valienvRepositoryAddress,
         target: valienvRepositoryTarget,
-        expire_in: past,
+        expire_in: dayjs.utc(now).subtract(1, "day").toISOString(),
       },
     ])
     .executeTakeFirstOrThrow();
@@ -97,8 +112,7 @@ test("correctly create a link without domain", { timeout }, async () => {
 
   expect(response.status).toBe(200);
 
-  // biome-ignore lint/suspicious/noExplicitAny:
-  const json: any = await response.json();
+  const json = (await response.json()) as LinksReply;
 
   expect(json).toHaveProperty("address");
   expect(json).toHaveProperty("expired_at");
@@ -130,14 +144,13 @@ test("correctly create a link with domain", { timeout }, async () => {
 
   expect(response.status).toBe(200);
 
-  // biome-ignore lint/suspicious/noExplicitAny:
-  const json: any = await response.json();
+  const json = (await response.json()) as LinksReply;
 
   expect(json).toHaveProperty("address");
   expect(json).toHaveProperty("expired_at");
   expect(json).toHaveProperty("link");
 
-  const url = new URL(json.link);
+  const url = new URL(json.link ?? "");
 
   expect(url.hostname).toBe("swan.io");
   expect(url.pathname.substring(1)).toMatch(addressRegExp);
@@ -156,8 +169,7 @@ test("returns unauthorized if no api key provided", { timeout }, async () => {
 
   expect(response.status).toBe(401);
 
-  // biome-ignore lint/suspicious/noExplicitAny:
-  const json: any = await response.json();
+  const json = await response.json();
 
   expect(json).toStrictEqual({
     statusCode: 401,
@@ -186,13 +198,14 @@ test("return a target from kutt database when found", { timeout }, async () => {
 
 test("don't return an expired link", { timeout }, async () => {
   const { db } = await import("../src/database/db");
+  const now = await getCurrentTimestamp(db);
 
   const { address } = await db
     .insertInto("links")
     .values({
       target: chicaneRepositoryTarget,
       address: generateAddress(),
-      expired_at: past,
+      expired_at: dayjs.utc(now).subtract(1, "minute").toISOString(),
     })
     .returning("address")
     .executeTakeFirstOrThrow();
@@ -215,26 +228,28 @@ test("don't return a kutt expired link", { timeout }, async () => {
 });
 
 test("clean expired links", { timeout }, async () => {
-  const { cleanExpiredLinks } = await import("../src");
   const { db } = await import("../src/database/db");
+  const now = await getCurrentTimestamp(db);
 
   await db
     .insertInto("links")
     .values([
       {
-        address: generateAddress(),
         target: boxedRepositoryTarget,
-        expired_at: past,
+        address: generateAddress(),
+        expired_at: dayjs.utc(now).subtract(1, "hour").toISOString(),
       },
       {
-        address: generateAddress(),
         target: chicaneRepositoryTarget,
-        expired_at: future,
+        address: generateAddress(),
+        expired_at: dayjs.utc(now).add(1, "day").toISOString(),
       },
     ])
     .returning("address")
     .executeTakeFirstOrThrow();
 
+  const { cleanExpiredLinks } = await import("../src");
   const { numDeletedRows } = await cleanExpiredLinks();
-  expect(numDeletedRows).toBe(BigInt(1));
+
+  expect(numDeletedRows).toBe(Number(1));
 });
