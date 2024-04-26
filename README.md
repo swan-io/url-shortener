@@ -24,13 +24,15 @@ At the project root, you should find a `.env.example` file. Copy its contents to
 
 ## Development
 
-To start developing, use the following command:
+To start the development server, run:
 
 ```bash
 $ yarn dev
 ```
 
-## Build
+## Building
+
+To build the production codebase, run:
 
 ```bash
 $ yarn build
@@ -38,8 +40,8 @@ $ yarn build
 
 ## Testing
 
+Run tests (using [vitest](https://vitest.dev) and [pgmock](https://github.com/stackframe-projects/pgmock)):
+
 ```bash
 $ yarn test
 ```
-
-We use [vitest](https://vitest.dev) and [pgmock](https://github.com/stackframe-projects/pgmock).
