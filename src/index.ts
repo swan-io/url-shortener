@@ -81,14 +81,17 @@ const LinksReply = Type.Object({
   link: Type.Optional(Type.String({ format: "uri" })),
 });
 
+export type LinksBody = Static<typeof LinksBody>;
+export type LinksReply = Static<typeof LinksReply>;
+
 const oneWeek = dayjs.duration(1, "week");
 
 // TODO: remove /api/v2/links after migration
 for (const path of ["/api/links", "/api/v2/links"]) {
   app.post<{
     Headers: { "X-API-Key"?: string };
-    Body: Static<typeof LinksBody>;
-    Reply: Static<typeof LinksReply>;
+    Body: LinksBody;
+    Reply: LinksReply;
   }>(
     path,
     {
