@@ -36,13 +36,11 @@ CREATE TABLE "links" (
 `;
 
 // biome-ignore lint/suspicious/noExplicitAny:
-const getCurrentTimestamp = async (db: Kysely<any>) => {
-  const result = await db.executeQuery(
-    sql`SELECT CURRENT_TIMESTAMP`.compile(db),
-  );
+const getNowFromDb = async (db: Kysely<any>) => {
+  const result = await db.executeQuery(sql`SELECT now()`.compile(db));
 
-  const firstRow = result.rows[0] as { current_timestamp: string };
-  return firstRow.current_timestamp;
+  const firstRow = result.rows[0] as { now: string };
+  return firstRow.now;
 };
 
 beforeAll(async () => {
@@ -64,7 +62,7 @@ beforeAll(async () => {
     kuttDb.executeQuery(kuttSchema.compile(kuttDb)),
   ]);
 
-  const now = await getCurrentTimestamp(kuttDb);
+  const now = await getNowFromDb(kuttDb);
 
   await kuttDb
     .insertInto("links")
@@ -198,7 +196,7 @@ test("return a target from kutt database when found", { timeout }, async () => {
 
 test("don't return an expired link", { timeout }, async () => {
   const { db } = await import("../src/database/db");
-  const now = await getCurrentTimestamp(db);
+  const now = await getNowFromDb(db);
 
   const { address } = await db
     .insertInto("links")
@@ -229,7 +227,7 @@ test("don't return a kutt expired link", { timeout }, async () => {
 
 test("clean expired links", { timeout }, async () => {
   const { db } = await import("../src/database/db");
-  const now = await getCurrentTimestamp(db);
+  const now = await getNowFromDb(db);
 
   await db
     .insertInto("links")

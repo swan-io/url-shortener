@@ -49,7 +49,7 @@ app.get<{ Params: { address: string } }>(
       .selectFrom("links")
       .select("target")
       .where("address", "=", address)
-      .where("expired_at", ">=", sql<Date>`CURRENT_TIMESTAMP`)
+      .where("expired_at", ">=", sql<Date>`now()`)
       .executeTakeFirst();
 
     if (link != null) {
@@ -63,7 +63,7 @@ app.get<{ Params: { address: string } }>(
       .where(({ eb, or }) =>
         or([
           eb("expire_in", "is", null),
-          eb("expire_in", ">=", sql<Date>`CURRENT_TIMESTAMP`),
+          eb("expire_in", ">=", sql<Date>`now()`),
         ]),
       )
       .executeTakeFirst();
@@ -169,7 +169,7 @@ app.listen(
 export const cleanExpiredLinks = () =>
   db
     .deleteFrom("links")
-    .where("expired_at", "<", sql<Date>`CURRENT_TIMESTAMP`)
+    .where("expired_at", "<", sql<Date>`now()`)
     .executeTakeFirstOrThrow();
 
 app.ready().then(() => {
