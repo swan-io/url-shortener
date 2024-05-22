@@ -3341,10 +3341,10 @@ validate-npm-package-license@^3.0.1:
     spdx-correct "^3.0.0"
     spdx-expression-parse "^3.0.0"
 
-valienv@0.6.0:
-  version "0.6.0"
-  resolved "https://registry.npmjs.org/valienv/-/valienv-0.6.0.tgz#897cbc9df066c7caf13d09c60ac0281d62176e61"
-  integrity sha512-QCJ5XYjHDq8kocjMdpgNOND9SsesNvlA0/OYio+hgjsg7sM8yoC0ntQBnuqWK7b38DJ+1hWAh3dh6KJOSOGmNQ==
+valienv@0.7.0:
+  version "0.7.0"
+  resolved "https://registry.npmjs.org/valienv/-/valienv-0.7.0.tgz#63db5b610a648e89238fc084cfea047296734347"
+  integrity sha512-Mz4GELbSwmIjQGabNv8NvubZYpz65nK/YqUMZ4xfCPk5HSToMs+ya9mBJmkY3m4l2MKrpTsnNu5HEkeVYPY+mg==
 
 vary@^1.1.2:
   version "1.1.2"

@@ -61,7 +61,7 @@
     "prisma": "5.14.0",
     "prisma-kysely": "1.8.0",
     "toad-scheduler": "3.0.1",
-    "valienv": "0.6.0"
+    "valienv": "0.7.0"
   },
   "devDependencies": {
     "@biomejs/biome": "1.7.3",
