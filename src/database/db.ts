@@ -5,6 +5,7 @@ import { DB, Timestamp } from "./generated/types";
 
 type KuttDB = {
   links: {
+    id: number;
     address: string;
     target: string;
     expire_in: Timestamp;
