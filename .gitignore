@@ -64,4 +64,4 @@ profile*
 dist
 
 # generated types
-src/database/generated
+src/database/types.ts

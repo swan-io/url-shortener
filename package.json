@@ -14,6 +14,7 @@
   "scripts": {
     "docker:up": "docker-compose up -d && yarn migrate",
     "docker:down": "docker-compose down -v",
+    "docker:build": "yarn build && docker build -t url-shortener:latest .",
     "build": "yarn clean && prettier '**/*' -u -c && yarn lint && yarn codegen && tsc -p tsconfig.build.json",
     "clean": "rm -rf dist src/database/generated",
     "codegen": "prisma generate",
@@ -22,7 +23,7 @@
     "format": "prettier '**/*' -u -w && prisma format",
     "lint": "biome check . --files-ignore-unknown=true --no-errors-on-unmatched",
     "migrate": "prisma migrate dev",
-    "start": "node dist",
+    "start": "npm run migrate && node dist",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
@@ -30,9 +31,6 @@
     "plugins": [
       "prettier-plugin-organize-imports"
     ]
-  },
-  "prisma": {
-    "schema": "src/database/schema.prisma"
   },
   "dependencies": {
     "@fastify/schedule": "4.1.1",
