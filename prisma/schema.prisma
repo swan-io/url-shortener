@@ -1,5 +1,7 @@
 generator client {
   provider        = "prisma-kysely"
+  output          = "../src/database"
+  fileName        = "types.ts"
   previewFeatures = ["postgresqlExtensions"]
 }
 

@@ -1,7 +1,7 @@
 import { Kysely, PostgresDialect } from "kysely";
 import { Pool } from "pg";
 import { env } from "../utils/env";
-import { DB, Timestamp } from "./generated/types";
+import { DB, Timestamp } from "./types";
 
 type KuttDB = {
   links: {
