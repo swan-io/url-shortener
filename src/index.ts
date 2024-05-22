@@ -175,10 +175,10 @@ export const cleanExpiredLinks = () =>
 app
   .ready()
   .then(async () => {
-    await db.selectFrom("links").select("id").executeTakeFirst();
+    await db.selectFrom("links").select("address").executeTakeFirst();
     app.log.info("Connected to service database");
 
-    await kuttDb.selectFrom("links").select("id").executeTakeFirst();
+    await kuttDb.selectFrom("links").select("address").executeTakeFirst();
     app.log.info("Connected to kutt database");
   })
   .then(() => {
