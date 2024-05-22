@@ -172,17 +172,26 @@ export const cleanExpiredLinks = () =>
     .where("expired_at", "<", sql<Date>`now()`)
     .executeTakeFirstOrThrow();
 
-app.ready().then(() => {
-  app.scheduler.addSimpleIntervalJob(
-    new SimpleIntervalJob(
-      { hours: 1 },
-      new AsyncTask(
-        "clean expired links",
-        () => cleanExpiredLinks(),
-        (err) => {
-          app.log.error(err);
-        },
+app
+  .ready()
+  .then(async () => {
+    await db.selectFrom("links").select("address").executeTakeFirst();
+    app.log.info("Connected to service database");
+
+    await kuttDb.selectFrom("links").select("address").executeTakeFirst();
+    app.log.info("Connected to kutt database");
+  })
+  .then(() => {
+    app.scheduler.addSimpleIntervalJob(
+      new SimpleIntervalJob(
+        { hours: 1 },
+        new AsyncTask(
+          "clean expired links",
+          () => cleanExpiredLinks(),
+          (err) => {
+            app.log.error(err);
+          },
+        ),
       ),
-    ),
-  );
-});
+    );
+  });
