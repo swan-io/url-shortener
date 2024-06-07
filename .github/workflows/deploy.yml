@@ -5,8 +5,9 @@ on:
     branches: [main]
 
 jobs:
-  test-build:
+  deploy:
     runs-on: ubuntu-latest
+    name: Deploy
 
     steps:
       - uses: actions/checkout@v4

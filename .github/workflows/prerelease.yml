@@ -14,6 +14,7 @@ on:
 jobs:
   prerelease:
     runs-on: ubuntu-latest
+    name: Prerelease
 
     steps:
       - uses: actions/checkout@v4

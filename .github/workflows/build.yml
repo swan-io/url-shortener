@@ -5,8 +5,9 @@ on:
     branches: [main]
 
 jobs:
-  test-build:
+  build:
     runs-on: ubuntu-latest
+    name: Build
 
     steps:
       - uses: actions/checkout@v4
