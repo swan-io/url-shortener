@@ -15,6 +15,8 @@ jobs:
   prerelease:
     runs-on: ubuntu-latest
     name: Prerelease
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -33,16 +35,15 @@ jobs:
       - name: Build app
         run: yarn build
 
-      - name: Print
-        run: |
-          echo "type is ${{ github.event.inputs.type }}" / ${{ inputs.type }}
+      - uses: zoontek/bump-package-version@v1
+        id: version
+        with:
+          type: ${{ inputs.type }}
+          prefix: v
 
-      # - name: Bump version
-      #   id: bump_version
-      #   uses: zoontek/bump-package-version@v1
-      #   with:
-      #     type: patch # must be "patch", "minor" or "major"
+      - uses: EndBug/add-and-commit@v9
+        with:
+          message: ${{ steps.version.outputs.new_version }}
 
-      # - uses: EndBug/add-and-commit@v9
-      #   with:
-      #     message: ${{ steps.bump_version.outputs.new_version }}
+      - name: Create GitHub prerelease
+        run: gh release create ${{ steps.version.outputs.new_version }} --title ${{ steps.version.outputs.new_version }} --generate-notes --prerelease
