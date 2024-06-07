@@ -33,16 +33,12 @@ jobs:
       - name: Build app
         run: yarn build
 
-      - name: Print
-        run: |
-          echo "type is ${{ github.event.inputs.type }}" / ${{ inputs.type }}
+      - name: Bump version
+        id: bump_version
+        uses: zoontek/bump-package-version@v1
+        with:
+          type: ${{ inputs.type }}
 
-      # - name: Bump version
-      #   id: bump_version
-      #   uses: zoontek/bump-package-version@v1
-      #   with:
-      #     type: patch # must be "patch", "minor" or "major"
-
-      # - uses: EndBug/add-and-commit@v9
-      #   with:
-      #     message: ${{ steps.bump_version.outputs.new_version }}
+      - uses: EndBug/add-and-commit@v9
+        with:
+          message: ${{ steps.bump_version.outputs.new_version }}
