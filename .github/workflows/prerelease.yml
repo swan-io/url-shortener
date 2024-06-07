@@ -1,0 +1,48 @@
+name: Prerelease
+
+on:
+  workflow_dispatch:
+    inputs:
+      type:
+        type: choice
+        description: Release type
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  prerelease:
+    runs-on: ubuntu-latest
+    name: Prerelease
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --pure-lockfile
+
+      - name: Run tests
+        run: yarn test
+
+      - name: Build app
+        run: yarn build
+
+      - name: Print
+        run: |
+          echo "type is ${{ github.event.inputs.type }}" / ${{ inputs.type }}
+
+      # - name: Bump version
+      #   id: bump_version
+      #   uses: zoontek/bump-package-version@v1
+      #   with:
+      #     type: patch # must be "patch", "minor" or "major"
+
+      # - uses: EndBug/add-and-commit@v9
+      #   with:
+      #     message: ${{ steps.bump_version.outputs.new_version }}
