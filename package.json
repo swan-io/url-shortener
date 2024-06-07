@@ -17,6 +17,7 @@
     "docker:build": "yarn build && docker build -t url-shortener:latest .",
     "build": "yarn clean && prettier '**/*' -u -c && yarn lint && yarn codegen && tsc -p tsconfig.build.json",
     "clean": "rm -rf dist src/database/generated",
+    "deploy-ci": "tsx scripts/deploy/deploy.ts",
     "codegen": "prisma generate",
     "dev": "yarn codegen && tsx watch --clear-screen=false src",
     "dump-schema": "prisma migrate diff --from-empty --to-schema-datasource src/database/schema.prisma --script > tests/schema.sql",
