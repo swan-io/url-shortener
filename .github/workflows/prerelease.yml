@@ -35,7 +35,7 @@ jobs:
       - name: Build app
         run: yarn build
 
-      - uses: zoontek/bump-package-version@v1
+      - uses: zoontek/bump-app-package-version@v1
         id: version
         with:
           type: ${{ inputs.type }}
