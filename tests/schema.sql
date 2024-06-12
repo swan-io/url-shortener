@@ -9,6 +9,7 @@ CREATE TABLE "links" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "address" TEXT NOT NULL,
     "target" TEXT NOT NULL,
+    "visited" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "expired_at" TIMESTAMP(3) NOT NULL,
 
