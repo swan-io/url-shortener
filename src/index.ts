@@ -46,10 +46,11 @@ app.get<{ Params: { address: string } }>(
     const { address } = request.params;
 
     const link = await db
-      .selectFrom("links")
-      .select("target")
+      .updateTable("links")
+      .set({ visited: true })
       .where("address", "=", address)
       .where("expired_at", ">=", sql<Date>`now()`)
+      .returning("target")
       .executeTakeFirst();
 
     if (link != null) {
