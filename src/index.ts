@@ -54,7 +54,7 @@ app.get<{ Params: { address: string } }>(
       .executeTakeFirst();
 
     if (link != null) {
-      return reply.redirect(302, link.target);
+      return reply.redirect(link.target, 302);
     }
 
     const kuttLink = await kuttDb
@@ -69,7 +69,7 @@ app.get<{ Params: { address: string } }>(
       )
       .executeTakeFirst();
 
-    return reply.redirect(302, kuttLink?.target ?? env.FALLBACK_URL);
+    return reply.redirect(kuttLink?.target ?? env.FALLBACK_URL, 302);
   },
 );
 
