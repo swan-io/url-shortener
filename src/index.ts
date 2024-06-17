@@ -181,16 +181,21 @@ app.ready().then(async () => {
     await kuttDb.selectFrom("links").select("address").executeTakeFirst();
     app.log.info("Connected to kutt database");
 
+    const taskId = "clean_expired_links";
+
     app.scheduler.addSimpleIntervalJob(
       new SimpleIntervalJob(
-        { hours: 1 },
-        new AsyncTask(
-          "clean expired links",
-          () => cleanExpiredLinks(),
-          (err) => {
-            app.log.error(err);
-          },
-        ),
+        {
+          days: 1,
+          runImmediately: true,
+        },
+        new AsyncTask(taskId, cleanExpiredLinks, (err) => {
+          app.log.error(err);
+        }),
+        {
+          id: taskId,
+          preventOverrun: true,
+        },
       ),
     );
   } catch (error) {
