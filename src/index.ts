@@ -54,7 +54,7 @@ app.get<{ Params: { address: string } }>(
       .executeTakeFirst();
 
     if (link != null) {
-      return reply.redirect(302, link.target);
+      return reply.redirect(link.target, 302);
     }
 
     const kuttLink = await kuttDb
@@ -69,7 +69,7 @@ app.get<{ Params: { address: string } }>(
       )
       .executeTakeFirst();
 
-    return reply.redirect(302, kuttLink?.target ?? env.FALLBACK_URL);
+    return reply.redirect(kuttLink?.target ?? env.FALLBACK_URL, 302);
   },
 );
 
@@ -181,16 +181,21 @@ app.ready().then(async () => {
     await kuttDb.selectFrom("links").select("address").executeTakeFirst();
     app.log.info("Connected to kutt database");
 
+    const taskId = "clean_expired_links";
+
     app.scheduler.addSimpleIntervalJob(
       new SimpleIntervalJob(
-        { hours: 1 },
-        new AsyncTask(
-          "clean expired links",
-          () => cleanExpiredLinks(),
-          (err) => {
-            app.log.error(err);
-          },
-        ),
+        {
+          days: 1,
+          runImmediately: true,
+        },
+        new AsyncTask(taskId, cleanExpiredLinks, (err) => {
+          app.log.error(err);
+        }),
+        {
+          id: taskId,
+          preventOverrun: true,
+        },
       ),
     );
   } catch (error) {
