@@ -24,7 +24,7 @@
     "format": "prettier '**/*' -u -w && prisma format",
     "lint": "biome check . --files-ignore-unknown=true --no-errors-on-unmatched",
     "migrate": "prisma migrate dev",
-    "start": "node dist",
+    "start": "prisma migrate deploy && node dist",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
