@@ -18,7 +18,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
 
     permissions:
-      contents: read
+      contents: write
       id-token: write
       pull-requests: read
 
