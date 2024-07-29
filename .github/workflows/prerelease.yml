@@ -62,6 +62,8 @@ jobs:
       #   if: ${{ github.repository == 'swan-io/url-shortener' }}
       #   uses: docker/build-push-action@v5
       #   with:
+      #     context: .
+      #     file: Dockerfile
       #     push: true
       #     tags: |
       #       ${{ secrets.DOCKER_REGISTRY }}/url-shortener:preprod-${{ github.sha }}
