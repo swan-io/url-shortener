@@ -16,8 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
+
     permissions:
-      contents: write
+      contents: read
+      id-token: write
       pull-requests: read
 
     steps:
