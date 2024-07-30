@@ -1,6 +1,6 @@
 # Swan URL shortener
 
-An URL shortener server, with fallback to [kutt](https://github.com/thedevs-network/kutt) database.
+An simple URL shortener server backed by PostgreSQL.
 
 ## Getting started
 

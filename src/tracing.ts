@@ -37,9 +37,7 @@ if (process.env.TRACING_SERVICE_NAME != null) {
     instrumentations: [
       new PinoInstrumentation(),
       new HttpInstrumentation({
-        // TODO: remove /api/v2/health after migration
-        ignoreIncomingRequestHook: (request) =>
-          request.url === "/api/health" || request.url === "/api/v2/health",
+        ignoreIncomingRequestHook: (request) => request.url === "/api/health",
       }),
       new FastifyInstrumentation({
         requestHook: (span, { request }: { request: FastifyRequest }) => {
