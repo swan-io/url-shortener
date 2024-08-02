@@ -20,7 +20,7 @@ export const app = fastify({
   logger: {
     level: env.LOG_LEVEL,
     redact: {
-      paths: ['req.headers["X-API-Key"]'],
+      paths: ['req.headers["X-API-Key"]', "req.url"],
     },
     ...(env.NODE_ENV === "development" && {
       transport: {
