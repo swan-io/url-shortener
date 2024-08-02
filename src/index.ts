@@ -86,8 +86,8 @@ const LinksReply = Type.Object({
   address: Type.String(),
   target: Type.String({ format: "uri" }),
   visited: Type.Boolean(),
-  expired_at: Type.String({ format: "date-time" }),
-  created_at: Type.String({ format: "date-time" }),
+  expired_at: Type.String(),
+  created_at: Type.String(),
 
   // TODO: remove this after iam migration
   link: Type.Optional(Type.String({ format: "uri" })),
