@@ -14,7 +14,7 @@ import { db, kuttDb } from "./database/db";
 import { generateAddress } from "./utils/address";
 import { env } from "./utils/env";
 import { retry } from "./utils/retry";
-import { parseDuration } from "./utils/time";
+import { databaseDateToISOString, parseDuration } from "./utils/time";
 
 export const app = fastify({
   logger: {
@@ -74,14 +74,22 @@ app.get<{ Params: { address: string } }>(
 );
 
 const LinksBody = Type.Object({
-  domain: Type.Optional(Type.String({ format: "hostname" })),
   target: Type.String({ format: "uri" }),
   expire_in: Type.Optional(Type.String()),
+
+  // TODO: remove this after iam migration
+  domain: Type.Optional(Type.String({ format: "hostname" })),
 });
 
 const LinksReply = Type.Object({
+  id: Type.String({ format: "uuid" }),
   address: Type.String(),
-  expired_at: Type.String(),
+  target: Type.String({ format: "uri" }),
+  visited: Type.Boolean(),
+  expired_at: Type.String({ format: "date-time" }),
+  created_at: Type.String({ format: "date-time" }),
+
+  // TODO: remove this after iam migration
   link: Type.Optional(Type.String({ format: "uri" })),
 });
 
@@ -118,7 +126,7 @@ for (const path of ["/api/links", "/api/v2/links"]) {
         .add(parseDuration(expire_in) ?? oneWeek)
         .toISOString();
 
-      const { address } = await retry(2, () =>
+      const link = await retry(2, () =>
         db
           .insertInto("links")
           .values({
@@ -126,15 +134,26 @@ for (const path of ["/api/links", "/api/v2/links"]) {
             target,
             expired_at,
           })
-          .returning("address")
+          .returning([
+            "id",
+            "address",
+            "target",
+            "visited",
+            "expired_at",
+            "created_at",
+          ])
           .executeTakeFirstOrThrow(),
       );
 
       return reply.status(200).send({
-        address,
-        expired_at,
+        ...link,
+
+        expired_at: databaseDateToISOString(link.expired_at),
+        created_at: databaseDateToISOString(link.created_at),
+
+        // TODO: remove this after iam migration
         ...(domain != null && {
-          link: `https://${domain}/${address}`,
+          link: `https://${domain}/${link.address}`,
         }),
       });
     },
