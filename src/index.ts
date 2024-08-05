@@ -13,6 +13,7 @@ import health from "fastify-healthcheck";
 import { sql } from "kysely";
 import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
 import { db, kuttDb } from "./database/db";
+import { auth } from "./plugins/auth";
 import { generateAddress } from "./utils/address";
 import { env } from "./utils/env";
 import { retry } from "./utils/retry";
@@ -22,7 +23,7 @@ export const app = fastify({
   logger: {
     level: env.LOG_LEVEL,
     redact: {
-      paths: ['req.headers["X-API-Key"]', "req.url"],
+      paths: ['req.headers["x-api-key"]', "req.url"],
     },
     ...(env.NODE_ENV === "development" && {
       transport: {
@@ -34,8 +35,12 @@ export const app = fastify({
 }).withTypeProvider<TypeBoxTypeProvider>();
 
 app.register(sensible);
-app.register(health, { healthcheckUrl: "/api/health" });
+app.register(auth);
 app.register(schedule);
+
+app.register(health, {
+  healthcheckUrl: "/api/health",
+});
 
 // TODO: remove after migration
 app.get("/api/v2/health", (_request, reply) => {
@@ -100,14 +105,13 @@ export type LinksReply = Static<typeof LinksReply>;
 
 const oneWeek = dayjs.duration(1, "week");
 
-// TODO: remove /api/v2/links after migration
-for (const path of ["/api/links", "/api/v2/links"]) {
+// TODO: remove /api/v2 after migration
+for (const basePath of ["/api", "/api/v2"]) {
   app.post<{
-    Headers: { "X-API-Key"?: string };
     Body: LinksBody;
     Reply: LinksReply;
   }>(
-    path,
+    `${basePath}/links`,
     {
       schema: {
         body: LinksBody,
@@ -117,10 +121,6 @@ for (const path of ["/api/links", "/api/v2/links"]) {
       },
     },
     async (request, reply) => {
-      if (request.headers["x-api-key"] !== env.API_KEY) {
-        return reply.unauthorized();
-      }
-
       const { domain, target, expire_in } = request.body;
 
       const expired_at = dayjs()

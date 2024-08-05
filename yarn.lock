@@ -1594,7 +1594,7 @@ fastify-healthcheck@4.4.0:
   dependencies:
     "@fastify/under-pressure" "^8.2.0"
 
-fastify-plugin@^4.0.0:
+fastify-plugin@4.5.1, fastify-plugin@^4.0.0:
   version "4.5.1"
   resolved "https://registry.npmjs.org/fastify-plugin/-/fastify-plugin-4.5.1.tgz#44dc6a3cc2cce0988bc09e13f160120bbd91dbee"
   integrity sha512-stRHYGeuqpEZTL1Ef0Ovr2ltazUT9g844X5z/zEBFLG8RYlpDiOCIG+ATvYEp+/zmc7sN29mcIMp8gvYplYPIQ==
