@@ -9,7 +9,6 @@ import { LinksReply } from "../src/index";
 import { generateAddress } from "../src/utils/address";
 import { env } from "../src/utils/env";
 
-dayjs.extend(utc);
 dayjs.extend(duration);
 
 const serverUrl = `http://0.0.0.0:${env.SERVER_PORT}`;
@@ -69,12 +68,12 @@ beforeAll(async () => {
       {
         address: kuttRepositoryAddress,
         target: kuttRepositoryTarget,
-        expire_in: dayjs.utc(now).add(1, "day").toISOString(),
+        expire_in: dayjs(now).add(1, "day").toISOString(),
       },
       {
         address: valienvRepositoryAddress,
         target: valienvRepositoryTarget,
-        expire_in: dayjs.utc(now).subtract(1, "day").toISOString(),
+        expire_in: dayjs(now).subtract(1, "day").toISOString(),
       },
     ])
     .executeTakeFirstOrThrow();
@@ -202,7 +201,7 @@ test("don't return an expired link", { timeout }, async () => {
     .values({
       target: chicaneRepositoryTarget,
       address: generateAddress(),
-      expired_at: dayjs.utc(now).subtract(1, "minute").toISOString(),
+      expired_at: dayjs(now).subtract(1, "minute").toISOString(),
     })
     .returning("address")
     .executeTakeFirstOrThrow();
@@ -234,12 +233,12 @@ test("clean expired links", { timeout }, async () => {
       {
         target: boxedRepositoryTarget,
         address: generateAddress(),
-        expired_at: dayjs.utc(now).subtract(1, "hour").toISOString(),
+        expired_at: dayjs(now).subtract(1, "hour").toISOString(),
       },
       {
         target: chicaneRepositoryTarget,
         address: generateAddress(),
-        expired_at: dayjs.utc(now).add(1, "day").toISOString(),
+        expired_at: dayjs(now).add(1, "day").toISOString(),
       },
     ])
     .returning("address")
