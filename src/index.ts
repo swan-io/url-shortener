@@ -129,14 +129,7 @@ for (const basePath of ["/api", "/api/v2"]) {
             target,
             expired_at,
           })
-          .returning([
-            "id",
-            "address",
-            "target",
-            "visited",
-            "expired_at",
-            "created_at",
-          ])
+          .returningAll()
           .executeTakeFirstOrThrow(),
       );
 
@@ -171,14 +164,7 @@ for (const basePath of ["/api", "/api/v2"]) {
 
       const link = await db
         .selectFrom("links")
-        .select([
-          "id",
-          "address",
-          "target",
-          "visited",
-          "expired_at",
-          "created_at",
-        ])
+        .selectAll()
         .where("id", "=", id)
         .executeTakeFirst();
 
