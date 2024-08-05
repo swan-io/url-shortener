@@ -13,6 +13,7 @@ import health from "fastify-healthcheck";
 import { sql } from "kysely";
 import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
 import { db, kuttDb } from "./database/db";
+import { auth } from "./plugins/auth";
 import { generateAddress } from "./utils/address";
 import { env } from "./utils/env";
 import { retry } from "./utils/retry";
@@ -22,7 +23,7 @@ export const app = fastify({
   logger: {
     level: env.LOG_LEVEL,
     redact: {
-      paths: ['req.headers["X-API-Key"]', "req.url"],
+      paths: ['req.headers["x-api-key"]', "req.url"],
     },
     ...(env.NODE_ENV === "development" && {
       transport: {
@@ -34,8 +35,12 @@ export const app = fastify({
 }).withTypeProvider<TypeBoxTypeProvider>();
 
 app.register(sensible);
-app.register(health, { healthcheckUrl: "/api/health" });
+app.register(auth);
 app.register(schedule);
+
+app.register(health, {
+  healthcheckUrl: "/api/health",
+});
 
 // TODO: remove after migration
 app.get("/api/v2/health", (_request, reply) => {
@@ -75,15 +80,7 @@ app.get<{ Params: { address: string } }>(
   },
 );
 
-const LinksBody = Type.Object({
-  target: Type.String({ format: "uri" }),
-  expire_in: Type.Optional(Type.String()),
-
-  // TODO: remove this after iam migration
-  domain: Type.Optional(Type.String({ format: "hostname" })),
-});
-
-const LinksReply = Type.Object({
+const Link = Type.Object({
   id: Type.String({ format: "uuid" }),
   address: Type.String(),
   target: Type.String({ format: "uri" }),
@@ -95,32 +92,29 @@ const LinksReply = Type.Object({
   link: Type.Optional(Type.String({ format: "uri" })),
 });
 
-export type LinksBody = Static<typeof LinksBody>;
-export type LinksReply = Static<typeof LinksReply>;
+export type Link = Static<typeof Link>;
 
 const oneWeek = dayjs.duration(1, "week");
 
-// TODO: remove /api/v2/links after migration
-for (const path of ["/api/links", "/api/v2/links"]) {
-  app.post<{
-    Headers: { "X-API-Key"?: string };
-    Body: LinksBody;
-    Reply: LinksReply;
-  }>(
-    path,
+// TODO: remove /api/v2 after migration
+for (const basePath of ["/api", "/api/v2"]) {
+  app.post(
+    `${basePath}/links`,
     {
       schema: {
-        body: LinksBody,
+        body: Type.Object({
+          target: Type.String({ format: "uri" }),
+          expire_in: Type.Optional(Type.String()),
+
+          // TODO: remove this after iam migration
+          domain: Type.Optional(Type.String({ format: "hostname" })),
+        }),
         response: {
-          200: LinksReply,
+          200: Link,
         },
       },
     },
     async (request, reply) => {
-      if (request.headers["x-api-key"] !== env.API_KEY) {
-        return reply.unauthorized();
-      }
-
       const { domain, target, expire_in } = request.body;
 
       const expired_at = dayjs()
@@ -135,14 +129,7 @@ for (const path of ["/api/links", "/api/v2/links"]) {
             target,
             expired_at,
           })
-          .returning([
-            "id",
-            "address",
-            "target",
-            "visited",
-            "expired_at",
-            "created_at",
-          ])
+          .returningAll()
           .executeTakeFirstOrThrow(),
       );
 
@@ -156,6 +143,40 @@ for (const path of ["/api/links", "/api/v2/links"]) {
         ...(domain != null && {
           link: `https://${domain}/${link.address}`,
         }),
+      });
+    },
+  );
+
+  app.get(
+    `${basePath}/links/:id`,
+    {
+      schema: {
+        params: Type.Object({
+          id: Type.String({ format: "uuid" }),
+        }),
+        response: {
+          200: Link,
+        },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+
+      const link = await db
+        .selectFrom("links")
+        .selectAll()
+        .where("id", "=", id)
+        .executeTakeFirst();
+
+      if (link == null) {
+        return reply.notFound();
+      }
+
+      return reply.status(200).send({
+        ...link,
+
+        expired_at: link.expired_at.toISOString(),
+        created_at: link.created_at.toISOString(),
       });
     },
   );
