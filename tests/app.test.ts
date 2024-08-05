@@ -110,12 +110,20 @@ test("correctly create a link without domain", { timeout }, async () => {
 
   const json = (await response.json()) as Link;
 
+  expect(json).toHaveProperty("id");
   expect(json).toHaveProperty("address");
+  expect(json).toHaveProperty("target");
+  expect(json).toHaveProperty("visited");
   expect(json).toHaveProperty("expired_at");
+  expect(json).toHaveProperty("created_at");
+
   expect(json).not.toHaveProperty("link");
 
   expect(json.address).toMatch(addressRegExp);
+  expect(json.target).toBe(chicaneRepositoryTarget);
+  expect(json.visited).toBe(false);
   expect(json.expired_at).toMatch(isoDateRegExp);
+  expect(json.created_at).toMatch(isoDateRegExp);
 
   const redirect = await fetch(`${serverUrl}/${json.address}`, {
     redirect: "manual",
@@ -141,9 +149,6 @@ test("correctly create a link with domain", { timeout }, async () => {
   expect(response.status).toBe(200);
 
   const json = (await response.json()) as Link;
-
-  expect(json).toHaveProperty("address");
-  expect(json).toHaveProperty("expired_at");
   expect(json).toHaveProperty("link");
 
   const url = new URL(json.link ?? "");
@@ -248,4 +253,38 @@ test("clean expired links", { timeout }, async () => {
   const { numDeletedRows } = await cleanExpiredLinks();
 
   expect(numDeletedRows).toBe(BigInt(1));
+});
+
+test("update visited on redirect", { timeout }, async () => {
+  const postResponse = await fetch(`${serverUrl}/api/links`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-API-Key": env.API_KEY,
+    },
+    body: JSON.stringify({
+      target: chicaneRepositoryTarget,
+    }),
+  });
+
+  expect(postResponse.status).toBe(200);
+
+  const postJson = (await postResponse.json()) as Link;
+  expect(postJson.visited).toBe(false);
+
+  await fetch(`${serverUrl}/${postJson.address}`, {
+    redirect: "follow",
+  });
+
+  const response = await fetch(`${serverUrl}/api/links/${postJson.id}`, {
+    headers: {
+      "Content-Type": "application/json",
+      "X-API-Key": env.API_KEY,
+    },
+  });
+
+  expect(response.status).toBe(200);
+
+  const json = (await response.json()) as Link;
+  expect(json.visited).toBe(true);
 });
