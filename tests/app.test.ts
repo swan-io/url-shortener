@@ -5,7 +5,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { PostgresMock } from "pgmock";
 import { afterEach, beforeAll, expect, test } from "vitest";
-import { LinksReply } from "../src/index";
+import { Link } from "../src/index";
 import { generateAddress } from "../src/utils/address";
 import { env } from "../src/utils/env";
 
@@ -108,7 +108,7 @@ test("correctly create a link without domain", { timeout }, async () => {
 
   expect(response.status).toBe(200);
 
-  const json = (await response.json()) as LinksReply;
+  const json = (await response.json()) as Link;
 
   expect(json).toHaveProperty("address");
   expect(json).toHaveProperty("expired_at");
@@ -140,7 +140,7 @@ test("correctly create a link with domain", { timeout }, async () => {
 
   expect(response.status).toBe(200);
 
-  const json = (await response.json()) as LinksReply;
+  const json = (await response.json()) as Link;
 
   expect(json).toHaveProperty("address");
   expect(json).toHaveProperty("expired_at");

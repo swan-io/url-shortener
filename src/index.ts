@@ -80,15 +80,7 @@ app.get<{ Params: { address: string } }>(
   },
 );
 
-const LinksBody = Type.Object({
-  target: Type.String({ format: "uri" }),
-  expire_in: Type.Optional(Type.String()),
-
-  // TODO: remove this after iam migration
-  domain: Type.Optional(Type.String({ format: "hostname" })),
-});
-
-const LinksReply = Type.Object({
+const Link = Type.Object({
   id: Type.String({ format: "uuid" }),
   address: Type.String(),
   target: Type.String({ format: "uri" }),
@@ -100,23 +92,25 @@ const LinksReply = Type.Object({
   link: Type.Optional(Type.String({ format: "uri" })),
 });
 
-export type LinksBody = Static<typeof LinksBody>;
-export type LinksReply = Static<typeof LinksReply>;
+export type Link = Static<typeof Link>;
 
 const oneWeek = dayjs.duration(1, "week");
 
 // TODO: remove /api/v2 after migration
 for (const basePath of ["/api", "/api/v2"]) {
-  app.post<{
-    Body: LinksBody;
-    Reply: LinksReply;
-  }>(
+  app.post(
     `${basePath}/links`,
     {
       schema: {
-        body: LinksBody,
+        body: Type.Object({
+          target: Type.String({ format: "uri" }),
+          expire_in: Type.Optional(Type.String()),
+
+          // TODO: remove this after iam migration
+          domain: Type.Optional(Type.String({ format: "hostname" })),
+        }),
         response: {
-          200: LinksReply,
+          200: Link,
         },
       },
     },
@@ -156,6 +150,40 @@ for (const basePath of ["/api", "/api/v2"]) {
         ...(domain != null && {
           link: `https://${domain}/${link.address}`,
         }),
+      });
+    },
+  );
+
+  app.get(
+    `${basePath}/links/:id`,
+    {
+      schema: {
+        params: Type.Object({
+          id: Type.String({ format: "uuid" }),
+        }),
+        response: {
+          200: Link,
+        },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+
+      const link = await db
+        .selectFrom("links")
+        .selectAll()
+        .where("id", "=", id)
+        .executeTakeFirst();
+
+      if (link == null) {
+        return reply.notFound();
+      }
+
+      return reply.status(200).send({
+        ...link,
+
+        expired_at: link.expired_at.toISOString(),
+        created_at: link.created_at.toISOString(),
       });
     },
   );
