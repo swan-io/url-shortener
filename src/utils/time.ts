@@ -1,9 +1,7 @@
 import { Dict } from "@swan-io/boxed";
 import dayjs from "dayjs";
 import duration, { DurationUnitType } from "dayjs/plugin/duration";
-import utc from "dayjs/plugin/utc";
 
-dayjs.extend(utc);
 dayjs.extend(duration);
 
 const deriveUnion = <T extends PropertyKey>(object: Record<T, null>) => {

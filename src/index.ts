@@ -1,3 +1,5 @@
+process.env.TZ = "UTC";
+
 import "./tracing";
 
 import schedule from "@fastify/schedule";
@@ -74,14 +76,22 @@ app.get<{ Params: { address: string } }>(
 );
 
 const LinksBody = Type.Object({
-  domain: Type.Optional(Type.String({ format: "hostname" })),
   target: Type.String({ format: "uri" }),
   expire_in: Type.Optional(Type.String()),
+
+  // TODO: remove this after iam migration
+  domain: Type.Optional(Type.String({ format: "hostname" })),
 });
 
 const LinksReply = Type.Object({
+  id: Type.String({ format: "uuid" }),
   address: Type.String(),
+  target: Type.String({ format: "uri" }),
+  visited: Type.Boolean(),
   expired_at: Type.String(),
+  created_at: Type.String(),
+
+  // TODO: remove this after iam migration
   link: Type.Optional(Type.String({ format: "uri" })),
 });
 
@@ -113,12 +123,11 @@ for (const path of ["/api/links", "/api/v2/links"]) {
 
       const { domain, target, expire_in } = request.body;
 
-      const expired_at = dayjs
-        .utc()
+      const expired_at = dayjs()
         .add(parseDuration(expire_in) ?? oneWeek)
         .toISOString();
 
-      const { address } = await retry(2, () =>
+      const link = await retry(2, () =>
         db
           .insertInto("links")
           .values({
@@ -126,15 +135,26 @@ for (const path of ["/api/links", "/api/v2/links"]) {
             target,
             expired_at,
           })
-          .returning("address")
+          .returning([
+            "id",
+            "address",
+            "target",
+            "visited",
+            "expired_at",
+            "created_at",
+          ])
           .executeTakeFirstOrThrow(),
       );
 
       return reply.status(200).send({
-        address,
-        expired_at,
+        ...link,
+
+        expired_at: link.expired_at.toISOString(),
+        created_at: link.created_at.toISOString(),
+
+        // TODO: remove this after iam migration
         ...(domain != null && {
-          link: `https://${domain}/${address}`,
+          link: `https://${domain}/${link.address}`,
         }),
       });
     },
