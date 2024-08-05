@@ -171,7 +171,14 @@ for (const basePath of ["/api", "/api/v2"]) {
 
       const link = await db
         .selectFrom("links")
-        .selectAll()
+        .select([
+          "id",
+          "address",
+          "target",
+          "visited",
+          "expired_at",
+          "created_at",
+        ])
         .where("id", "=", id)
         .executeTakeFirst();
 
