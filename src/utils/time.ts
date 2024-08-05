@@ -1,13 +1,8 @@
 import { Dict } from "@swan-io/boxed";
 import dayjs from "dayjs";
 import duration, { DurationUnitType } from "dayjs/plugin/duration";
-import utc from "dayjs/plugin/utc";
 
-dayjs.extend(utc);
 dayjs.extend(duration);
-
-export const databaseDateToISOString = (date: Date) =>
-  dayjs(date).utc(true).toISOString();
 
 const deriveUnion = <T extends PropertyKey>(object: Record<T, null>) => {
   const array = Dict.keys(object);

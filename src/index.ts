@@ -1,3 +1,5 @@
+process.env.TZ = "UTC";
+
 import "./tracing";
 
 import schedule from "@fastify/schedule";
@@ -14,7 +16,7 @@ import { db, kuttDb } from "./database/db";
 import { generateAddress } from "./utils/address";
 import { env } from "./utils/env";
 import { retry } from "./utils/retry";
-import { databaseDateToISOString, parseDuration } from "./utils/time";
+import { parseDuration } from "./utils/time";
 
 export const app = fastify({
   logger: {
@@ -121,8 +123,7 @@ for (const path of ["/api/links", "/api/v2/links"]) {
 
       const { domain, target, expire_in } = request.body;
 
-      const expired_at = dayjs
-        .utc()
+      const expired_at = dayjs()
         .add(parseDuration(expire_in) ?? oneWeek)
         .toISOString();
 
@@ -148,8 +149,8 @@ for (const path of ["/api/links", "/api/v2/links"]) {
       return reply.status(200).send({
         ...link,
 
-        expired_at: databaseDateToISOString(link.expired_at),
-        created_at: databaseDateToISOString(link.created_at),
+        expired_at: link.expired_at.toISOString(),
+        created_at: link.created_at.toISOString(),
 
         // TODO: remove this after iam migration
         ...(domain != null && {

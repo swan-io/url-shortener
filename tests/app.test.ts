@@ -1,6 +1,5 @@
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
-import utc from "dayjs/plugin/utc";
 import { Kysely, sql } from "kysely";
 import fs from "node:fs/promises";
 import path from "node:path";
