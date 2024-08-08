@@ -23,7 +23,20 @@ export const app = fastify({
   logger: {
     level: env.LOG_LEVEL,
     redact: {
-      paths: ['req.headers["x-api-key"]', "req.url"],
+      paths: ['req.headers["x-api-key"]'],
+    },
+    serializers: {
+      req: (request) => {
+        const { url } = request;
+
+        return {
+          method: request.method,
+          url: url === "/api" || url.startsWith("/api/") ? url : "[Redacted]",
+          hostname: request.hostname,
+          remoteAddress: request.ip,
+          remotePort: request.socket ? request.socket.remotePort : undefined,
+        };
+      },
     },
     ...(env.NODE_ENV === "development" && {
       transport: {
@@ -39,12 +52,8 @@ app.register(auth);
 app.register(schedule);
 
 app.register(health, {
+  logLevel: env.LOG_LEVEL === "debug" ? env.LOG_LEVEL : "silent",
   healthcheckUrl: "/api/health",
-});
-
-// TODO: remove after migration
-app.get("/api/v2/health", (_request, reply) => {
-  return reply.status(200).send("OK");
 });
 
 app.get<{ Params: { address: string } }>(
@@ -96,91 +105,88 @@ export type Link = Static<typeof Link>;
 
 const oneWeek = dayjs.duration(1, "week");
 
-// TODO: remove /api/v2 after migration
-for (const basePath of ["/api", "/api/v2"]) {
-  app.post(
-    `${basePath}/links`,
-    {
-      schema: {
-        body: Type.Object({
-          target: Type.String({ format: "uri" }),
-          expire_in: Type.Optional(Type.String()),
-
-          // TODO: remove this after iam migration
-          domain: Type.Optional(Type.String({ format: "hostname" })),
-        }),
-        response: {
-          200: Link,
-        },
-      },
-    },
-    async (request, reply) => {
-      const { domain, target, expire_in } = request.body;
-
-      const expired_at = dayjs()
-        .add(parseDuration(expire_in) ?? oneWeek)
-        .toISOString();
-
-      const link = await retry(2, () =>
-        db
-          .insertInto("links")
-          .values({
-            address: generateAddress(),
-            target,
-            expired_at,
-          })
-          .returningAll()
-          .executeTakeFirstOrThrow(),
-      );
-
-      return reply.status(200).send({
-        ...link,
-
-        expired_at: link.expired_at.toISOString(),
-        created_at: link.created_at.toISOString(),
+app.post(
+  "/api/links",
+  {
+    schema: {
+      body: Type.Object({
+        target: Type.String({ format: "uri" }),
+        expire_in: Type.Optional(Type.String()),
 
         // TODO: remove this after iam migration
-        ...(domain != null && {
-          link: `https://${domain}/${link.address}`,
-        }),
-      });
-    },
-  );
-
-  app.get(
-    `${basePath}/links/:id`,
-    {
-      schema: {
-        params: Type.Object({
-          id: Type.String({ format: "uuid" }),
-        }),
-        response: {
-          200: Link,
-        },
+        domain: Type.Optional(Type.String({ format: "hostname" })),
+      }),
+      response: {
+        200: Link,
       },
     },
-    async (request, reply) => {
-      const { id } = request.params;
+  },
+  async (request, reply) => {
+    const { domain, target, expire_in } = request.body;
 
-      const link = await db
-        .selectFrom("links")
-        .selectAll()
-        .where("id", "=", id)
-        .executeTakeFirst();
+    const expired_at = dayjs()
+      .add(parseDuration(expire_in) ?? oneWeek)
+      .toISOString();
 
-      if (link == null) {
-        return reply.notFound();
-      }
+    const link = await retry(2, () =>
+      db
+        .insertInto("links")
+        .values({
+          address: generateAddress(),
+          target,
+          expired_at,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow(),
+    );
 
-      return reply.status(200).send({
-        ...link,
+    return reply.status(200).send({
+      ...link,
 
-        expired_at: link.expired_at.toISOString(),
-        created_at: link.created_at.toISOString(),
-      });
+      expired_at: link.expired_at.toISOString(),
+      created_at: link.created_at.toISOString(),
+
+      // TODO: remove this after iam migration
+      ...(domain != null && {
+        link: `https://${domain}/${link.address}`,
+      }),
+    });
+  },
+);
+
+app.get(
+  "/api/links/:id",
+  {
+    schema: {
+      params: Type.Object({
+        id: Type.String({ format: "uuid" }),
+      }),
+      response: {
+        200: Link,
+      },
     },
-  );
-}
+  },
+  async (request, reply) => {
+    const { id } = request.params;
+
+    const link = await db
+      .selectFrom("links")
+      .selectAll()
+      .where("id", "=", id)
+      .executeTakeFirst();
+
+    if (link == null) {
+      return reply.notFound();
+    }
+
+    return reply.status(200).send({
+      ...link,
+
+      expired_at: link.expired_at.toISOString(),
+      created_at: link.created_at.toISOString(),
+    });
+  },
+);
 
 // delay is the number of ms for the graceful close to finish
 const closeListeners = closeWithGrace({ delay: 500 }, ({ err }) => {
@@ -219,8 +225,8 @@ app.ready().then(async () => {
     await db.selectFrom("links").select("address").executeTakeFirst();
     app.log.info("Connected to service database");
 
-    await kuttDb.selectFrom("links").select("address").executeTakeFirst();
-    app.log.info("Connected to kutt database");
+    // await kuttDb.selectFrom("links").select("address").executeTakeFirst();
+    // app.log.info("Connected to kutt database");
 
     const taskId = "clean_expired_links";
 
