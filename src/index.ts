@@ -52,7 +52,7 @@ app.register(auth);
 app.register(schedule);
 
 app.register(health, {
-  logLevel: env.LOG_LEVEL === "debug" ? env.LOG_LEVEL : "silent",
+  logLevel: env.LOG_LEVEL === "debug" ? "debug" : "silent",
   healthcheckUrl: "/api/health",
 });
 
