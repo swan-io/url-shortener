@@ -13,8 +13,12 @@
     "enabled": true,
     "rules": {
       "recommended": true,
+      "complexity": {
+        "useLiteralKeys": "off"
+      },
       "style": {
-        "useImportType": "off"
+        "useImportType": "off",
+        "useTemplate": "off"
       }
     }
   },

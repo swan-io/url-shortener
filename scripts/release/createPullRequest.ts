@@ -91,11 +91,14 @@ const getWorkspacePackages = () =>
 
 const gitAddAll = () => exec("git add . -u");
 const gitCheckout = (branch: string) => exec(`git checkout ${branch}`);
+const gitCommit = (message: string) => exec(`git commit -m ${quote(message)}`);
+
 const gitCheckoutNewBranch = (branch: string) =>
   exec(`git checkout -b ${branch}`);
-const gitCommit = (message: string) => exec(`git commit -m ${quote(message)}`);
+
 const gitDeleteLocalBranch = (branch: string) =>
   exec(`git branch -D ${branch}`);
+
 const gitPush = (branch: string, remote: string) =>
   exec(`git push -u ${remote} ${branch}`);
 
@@ -198,13 +201,13 @@ const createGhCompareUrl = (from: string | undefined, to: string) =>
 
   const packages = await getWorkspacePackages();
 
-  Object.entries(packages).forEach(([, { location }]) => {
+  for (const [, { location }] of Object.entries(packages)) {
     const pkgPath = path.join(rootDir, location, "package.json");
     const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as PackageJson;
 
     pkg["version"] = nextVersion.raw;
     fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n", "utf-8");
-  });
+  }
 
   await gitCheckoutNewBranch(releaseBranch);
   await gitAddAll();
