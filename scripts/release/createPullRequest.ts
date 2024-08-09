@@ -84,11 +84,6 @@ const hasGitRemoteBranch = (branch: string, remote: string) =>
     `git show-ref --quiet --verify -- "refs/remotes/${remote}/${branch}"`,
   );
 
-const getWorkspacePackages = () =>
-  exec("yarn workspaces info --json").then(
-    (info) => JSON.parse(info) as Record<string, { location: string }>,
-  );
-
 const gitAddAll = () => exec("git add . -u");
 const gitCheckout = (branch: string) => exec(`git checkout ${branch}`);
 const gitCommit = (message: string) => exec(`git commit -m ${quote(message)}`);
@@ -198,16 +193,6 @@ const createGhCompareUrl = (from: string | undefined, to: string) =>
 
   pkg["version"] = nextVersion.raw;
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n", "utf-8");
-
-  const packages = await getWorkspacePackages();
-
-  for (const [, { location }] of Object.entries(packages)) {
-    const pkgPath = path.join(rootDir, location, "package.json");
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as PackageJson;
-
-    pkg["version"] = nextVersion.raw;
-    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n", "utf-8");
-  }
 
   await gitCheckoutNewBranch(releaseBranch);
   await gitAddAll();
