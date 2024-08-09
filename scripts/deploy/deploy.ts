@@ -29,26 +29,18 @@ execSync(
   `cd ${tmp} && git clone --single-branch --branch master https://projects:${env.DEPLOY_SWAN_TOKEN}@${env.DEPLOY_SWAN_REPOSITORY} ${repoName}`,
 );
 
-const file = fs.readFileSync(
-  path.join(
-    tmp,
-    repoName,
-    env.DEPLOY_ENVIRONMENT,
-    `${env.DEPLOY_APP_NAME}-values.yaml`,
-  ),
-  "utf-8",
+const filePath = path.join(
+  tmp,
+  repoName,
+  env.DEPLOY_ENVIRONMENT,
+  `${env.DEPLOY_APP_NAME}-values.yaml`,
 );
 
-const updatedFile = file.replaceAll(/\btag: .+/g, `tag: ${env.TAG}`);
+const file = fs.readFileSync(filePath, "utf-8");
 
 fs.writeFileSync(
-  path.join(
-    tmp,
-    repoName,
-    env.DEPLOY_ENVIRONMENT,
-    `${env.DEPLOY_APP_NAME}-values.yaml`,
-  ),
-  updatedFile,
+  filePath,
+  file.replaceAll(/\btag: .+/g, `tag: ${env.TAG}`),
   "utf-8",
 );
 

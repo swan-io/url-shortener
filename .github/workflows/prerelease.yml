@@ -1,21 +1,17 @@
 name: Prerelease
 
 on:
-  workflow_dispatch:
-    inputs:
-      type:
-        type: choice
-        description: Release type
-        options:
-          - patch
-          - minor
-          - major
+  pull_request:
+    types: [closed]
 
 jobs:
   prerelease:
+    if: ${{ github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release-v') }}
     runs-on: ubuntu-latest
+
     env:
       GH_TOKEN: ${{ github.token }}
+      REF_BRANCH: ${{ github.event.pull_request.head.ref }}
 
     permissions:
       contents: write
@@ -39,12 +35,6 @@ jobs:
       - name: Build app
         run: yarn build
 
-      - uses: zoontek/bump-app-package-version@v1.0.0
-        id: version
-        with:
-          type: ${{ inputs.type }}
-          prefix: v
-
       - name: Configure AWS Credentials
         if: ${{ github.repository == 'swan-io/url-shortener' }}
         uses: aws-actions/configure-aws-credentials@v4
@@ -58,6 +48,10 @@ jobs:
         with:
           registry: ${{ secrets.DOCKER_REGISTRY }}
 
+      - name: Get version
+        id: version
+        run: echo version="$REF_BRANCH" | sed -e 's/release-//g' >> $GITHUB_OUTPUT
+
       - name: Dockerize & Push to Registry
         if: ${{ github.repository == 'swan-io/url-shortener' }}
         uses: docker/build-push-action@v5
@@ -67,13 +61,13 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKER_REGISTRY }}/url-shortener:preprod-${{ github.sha }}
-            ${{ secrets.DOCKER_REGISTRY }}/url-shortener:preprod-${{ steps.version.outputs.new_version }}
+            ${{ secrets.DOCKER_REGISTRY }}/url-shortener:preprod-${{ steps.version.outputs.version }}
 
       - name: Deploy
         if: ${{ github.repository == 'swan-io/url-shortener' }}
         run: yarn deploy-ci
         env:
-          TAG: preprod-${{ steps.version.outputs.new_version }}
+          TAG: preprod-${{ steps.version.outputs.version }}
           DEPLOY_SWAN_TOKEN: ${{ secrets.DEPLOY_SWAN_TOKEN }}
           DEPLOY_SWAN_REPOSITORY: ${{ secrets.DEPLOY_SWAN_REPOSITORY }}
           DEPLOY_GIT_USER: ${{ secrets.DEPLOY_GIT_USER }}
@@ -81,10 +75,5 @@ jobs:
           DEPLOY_ENVIRONMENT: preprod
           DEPLOY_APP_NAME: url-shortener
 
-      - uses: EndBug/add-and-commit@v9
-        with:
-          default_author: github_actions
-          message: ${{ steps.version.outputs.new_version }}
-
       - name: Create GitHub prerelease
-        run: gh release create ${{ steps.version.outputs.new_version }} --title ${{ steps.version.outputs.new_version }} --generate-notes --prerelease
+        run: yarn tsx scripts/release/createPrerelease.ts
