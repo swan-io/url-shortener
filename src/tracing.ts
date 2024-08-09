@@ -37,7 +37,8 @@ if (process.env.TRACING_SERVICE_NAME != null) {
     instrumentations: [
       new PinoInstrumentation(),
       new HttpInstrumentation({
-        ignoreIncomingRequestHook: (request) => request.url === "/api/health",
+        ignoreIncomingRequestHook: (request) =>
+          request.url === "/api/health" || request.url === "/api/metrics",
       }),
       new FastifyInstrumentation({
         requestHook: (span, { request }: { request: FastifyRequest }) => {

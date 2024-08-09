@@ -10,6 +10,7 @@ import closeWithGrace from "close-with-grace";
 import dayjs from "dayjs";
 import fastify from "fastify";
 import health from "fastify-healthcheck";
+import metrics from "fastify-metrics";
 import { sql } from "kysely";
 import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
 import { db, kuttDb } from "./database/db";
@@ -51,9 +52,15 @@ app.register(sensible);
 app.register(auth);
 app.register(schedule);
 
+const debugOnlyLogLevel = env.LOG_LEVEL === "debug" ? "debug" : "silent";
+
 app.register(health, {
-  logLevel: env.LOG_LEVEL === "debug" ? "debug" : "silent",
   healthcheckUrl: "/api/health",
+  logLevel: debugOnlyLogLevel,
+});
+app.register(metrics, {
+  endpoint: "/api/metrics",
+  logLevel: debugOnlyLogLevel,
 });
 
 app.get<{ Params: { address: string } }>(
@@ -225,8 +232,8 @@ app.ready().then(async () => {
     await db.selectFrom("links").select("address").executeTakeFirst();
     app.log.info("Connected to service database");
 
-    // await kuttDb.selectFrom("links").select("address").executeTakeFirst();
-    // app.log.info("Connected to kutt database");
+    await kuttDb.selectFrom("links").select("address").executeTakeFirst();
+    app.log.info("Connected to kutt database");
 
     const taskId = "clean_expired_links";
 
