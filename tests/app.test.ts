@@ -19,19 +19,6 @@ const isoDateRegExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
 const boxedRepositoryTarget = "https://github.com/@swan-io/boxed";
 const chicaneRepositoryTarget = "https://github.com/@swan-io/chicane";
-const kuttRepositoryTarget = "https://github.com/thedevs-network/kutt";
-const valienvRepositoryTarget = "https://github.com/zoontek/valienv";
-
-const kuttRepositoryAddress = generateAddress();
-const valienvRepositoryAddress = generateAddress();
-
-const kuttSchema = sql`
-CREATE TABLE "links" (
-  "address" TEXT NOT NULL,
-  "target" TEXT NOT NULL,
-  "expire_in" TIMESTAMP(3) NOT NULL
-);
-`;
 
 // biome-ignore lint/suspicious/noExplicitAny:
 const getNowFromDb = async (db: Kysely<any>) => {
@@ -42,50 +29,22 @@ const getNowFromDb = async (db: Kysely<any>) => {
 };
 
 beforeAll(async () => {
-  const [dbMock, kuttMock] = await Promise.all([
-    PostgresMock.create(),
-    PostgresMock.create(),
-  ]);
+  const dbMock = await PostgresMock.create();
+  await dbMock.listen(25432);
 
-  await Promise.all([dbMock.listen(25432), kuttMock.listen(35432)]);
-
-  const { db, kuttDb } = await import("../src/database/db");
+  const { db } = await import("../src/database/db");
   const schema = await fs.readFile(path.join(__dirname, "schema.sql"), "utf-8");
 
   // @ts-expect-error
   const dbSchema = sql(schema);
-
-  await Promise.all([
-    db.executeQuery(dbSchema.compile(db)),
-    kuttDb.executeQuery(kuttSchema.compile(kuttDb)),
-  ]);
-
-  const now = await getNowFromDb(kuttDb);
-
-  await kuttDb
-    .insertInto("links")
-    .values([
-      {
-        address: kuttRepositoryAddress,
-        target: kuttRepositoryTarget,
-        expire_in: dayjs(now).add(1, "day").toISOString(),
-      },
-      {
-        address: valienvRepositoryAddress,
-        target: valienvRepositoryTarget,
-        expire_in: dayjs(now).subtract(1, "day").toISOString(),
-      },
-    ])
-    .executeTakeFirstOrThrow();
+  await db.executeQuery(dbSchema.compile(db));
 
   const { app } = await import("../src/index");
   await app.ready();
 
   return async () => {
     await app.close();
-
     dbMock.destroy();
-    kuttMock.destroy();
   };
 }, timeout);
 
@@ -188,15 +147,6 @@ test("redirect to fallback url when no target found", { timeout }, async () => {
   expect(response.headers.get("location")).toBe(env.FALLBACK_URL);
 });
 
-test("return a target from kutt database when found", { timeout }, async () => {
-  const response = await fetch(`${serverUrl}/${kuttRepositoryAddress}`, {
-    redirect: "manual",
-  });
-
-  expect(response.status).toBe(302);
-  expect(response.headers.get("location")).toBe(kuttRepositoryTarget);
-});
-
 test("don't return an expired link", { timeout }, async () => {
   const { db } = await import("../src/database/db");
   const now = await getNowFromDb(db);
@@ -212,15 +162,6 @@ test("don't return an expired link", { timeout }, async () => {
     .executeTakeFirstOrThrow();
 
   const response = await fetch(`${serverUrl}/${address}`, {
-    redirect: "manual",
-  });
-
-  expect(response.status).toBe(302);
-  expect(response.headers.get("location")).toBe(env.FALLBACK_URL);
-});
-
-test("don't return a kutt expired link", { timeout }, async () => {
-  const response = await fetch(`${serverUrl}/${valienvRepositoryAddress}`, {
     redirect: "manual",
   });
 

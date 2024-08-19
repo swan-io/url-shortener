@@ -37,7 +37,7 @@
   "dependencies": {
     "@fastify/schedule": "4.1.1",
     "@fastify/sensible": "5.6.0",
-    "@fastify/type-provider-typebox": "4.0.0",
+    "@fastify/type-provider-typebox": "4.1.0",
     "@opentelemetry/api": "1.9.0",
     "@opentelemetry/core": "1.25.1",
     "@opentelemetry/exporter-trace-otlp-http": "0.52.1",
@@ -70,7 +70,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
-    "@types/node": "20.14.14",
+    "@types/node": "20.16.1",
     "@types/pg": "8.11.6",
     "@types/prompts": "2.4.9",
     "@types/semver": "7.5.8",
@@ -80,7 +80,7 @@
     "prompts": "2.4.2",
     "semver": "7.6.3",
     "tsx": "4.16.5",
-    "type-fest": "4.24.0",
+    "type-fest": "4.25.0",
     "typescript": "5.5.4",
     "vitest": "2.0.5"
   }

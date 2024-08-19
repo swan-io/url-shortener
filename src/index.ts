@@ -13,7 +13,7 @@ import health from "fastify-healthcheck";
 import metrics from "fastify-metrics";
 import { sql } from "kysely";
 import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
-import { db, kuttDb } from "./database/db";
+import { db } from "./database/db";
 import { auth } from "./plugins/auth";
 import { generateAddress } from "./utils/address";
 import { env } from "./utils/env";
@@ -76,23 +76,7 @@ app.get<{ Params: { address: string } }>(
       .returning("target")
       .executeTakeFirst();
 
-    if (link != null) {
-      return reply.redirect(link.target, 302);
-    }
-
-    const kuttLink = await kuttDb
-      .selectFrom("links")
-      .select("target")
-      .where("address", "=", address)
-      .where(({ eb, or }) =>
-        or([
-          eb("expire_in", "is", null),
-          eb("expire_in", ">=", sql<Date>`now()`),
-        ]),
-      )
-      .executeTakeFirst();
-
-    return reply.redirect(kuttLink?.target ?? env.FALLBACK_URL, 302);
+    return reply.redirect(link?.target ?? env.FALLBACK_URL, 302);
   },
 );
 
@@ -231,9 +215,6 @@ app.ready().then(async () => {
   try {
     await db.selectFrom("links").select("address").executeTakeFirst();
     app.log.info("Connected to service database");
-
-    await kuttDb.selectFrom("links").select("address").executeTakeFirst();
-    app.log.info("Connected to kutt database");
 
     const taskId = "clean_expired_links";
 
