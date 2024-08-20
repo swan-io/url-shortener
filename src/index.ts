@@ -114,12 +114,7 @@ app.post(
     },
   },
   async (request, reply) => {
-    const {
-      address = generateAddress(),
-      domain,
-      expire_in,
-      target,
-    } = request.body;
+    const { address, domain, expire_in, target } = request.body;
 
     const expired_at = dayjs()
       .add(parseDuration(expire_in) ?? oneWeek)
@@ -128,7 +123,11 @@ app.post(
     const link = await retry(2, () =>
       db
         .insertInto("links")
-        .values({ address, target, expired_at })
+        .values({
+          address: address ?? generateAddress(),
+          target,
+          expired_at,
+        })
         .returningAll()
         .executeTakeFirstOrThrow(),
     );
