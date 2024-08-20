@@ -116,6 +116,37 @@ test("correctly create a link with domain", { timeout }, async () => {
   expect(url.pathname.substring(1)).toMatch(addressRegExp);
 });
 
+test("correctly create a link with custom address", { timeout }, async () => {
+  const response = await fetch(`${serverUrl}/api/links`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-API-Key": env.API_KEY,
+    },
+    body: JSON.stringify({
+      address: "chicane",
+      target: chicaneRepositoryTarget,
+    }),
+  });
+
+  expect(response.status).toBe(200);
+
+  const json = (await response.json()) as Link;
+
+  expect(json).toHaveProperty("address");
+  expect(json).toHaveProperty("target");
+
+  expect(json.address).toBe("chicane");
+  expect(json.target).toBe(chicaneRepositoryTarget);
+
+  const redirect = await fetch(`${serverUrl}/${json.address}`, {
+    redirect: "manual",
+  });
+
+  expect(redirect.status).toBe(302);
+  expect(redirect.headers.get("location")).toBe(chicaneRepositoryTarget);
+});
+
 test("returns unauthorized if no api key provided", { timeout }, async () => {
   const response = await fetch(`${serverUrl}/api/links`, {
     method: "POST",
