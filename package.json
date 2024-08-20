@@ -1,7 +1,7 @@
 {
   "name": "@swan-io/url-shortener",
   "description": "Swan URL shortener server",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "license": "MIT",
   "engines": {
     "node": ">=20.9.0",
@@ -12,8 +12,8 @@
     "url": "https://github.com/swan-io/url-shortener"
   },
   "scripts": {
-    "docker:up": "docker-compose up -d && yarn migrate",
-    "docker:down": "docker-compose down -v",
+    "docker:up": "docker compose up -d && yarn migrate",
+    "docker:down": "docker compose down -v",
     "docker:build": "yarn build && docker build -t url-shortener:latest .",
     "build": "yarn clean && prettier '**/*' -u -c && yarn lint && yarn codegen && tsc -p tsconfig.build.json",
     "clean": "rm -rf dist src/database/generated",

@@ -101,8 +101,9 @@ app.post(
   {
     schema: {
       body: Type.Object({
-        target: Type.String({ format: "uri" }),
+        address: Type.Optional(Type.String()),
         expire_in: Type.Optional(Type.String()),
+        target: Type.String({ format: "uri" }),
 
         // TODO: remove this after iam migration
         domain: Type.Optional(Type.String({ format: "hostname" })),
@@ -113,7 +114,7 @@ app.post(
     },
   },
   async (request, reply) => {
-    const { domain, target, expire_in } = request.body;
+    const { address, domain, expire_in, target } = request.body;
 
     const expired_at = dayjs()
       .add(parseDuration(expire_in) ?? oneWeek)
@@ -123,7 +124,7 @@ app.post(
       db
         .insertInto("links")
         .values({
-          address: generateAddress(),
+          address: address ?? generateAddress(),
           target,
           expired_at,
         })
