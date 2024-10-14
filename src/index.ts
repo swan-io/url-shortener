@@ -87,9 +87,6 @@ const Link = Type.Object({
   visited: Type.Boolean(),
   expired_at: Type.String(),
   created_at: Type.String(),
-
-  // TODO: remove this after iam migration
-  link: Type.Optional(Type.String({ format: "uri" })),
 });
 
 export type Link = Static<typeof Link>;
@@ -104,9 +101,6 @@ app.post(
         address: Type.Optional(Type.String()),
         expire_in: Type.Optional(Type.String()),
         target: Type.String({ format: "uri" }),
-
-        // TODO: remove this after iam migration
-        domain: Type.Optional(Type.String({ format: "hostname" })),
       }),
       response: {
         200: Link,
@@ -114,7 +108,7 @@ app.post(
     },
   },
   async (request, reply) => {
-    const { address, domain, expire_in, target } = request.body;
+    const { address, expire_in, target } = request.body;
 
     const expired_at = dayjs()
       .add(parseDuration(expire_in) ?? oneWeek)
@@ -137,11 +131,6 @@ app.post(
 
       expired_at: link.expired_at.toISOString(),
       created_at: link.created_at.toISOString(),
-
-      // TODO: remove this after iam migration
-      ...(domain != null && {
-        link: `https://${domain}/${link.address}`,
-      }),
     });
   },
 );

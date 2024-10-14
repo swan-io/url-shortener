@@ -53,7 +53,7 @@ afterEach(async () => {
   await db.deleteFrom("links").executeTakeFirstOrThrow();
 }, timeout);
 
-test("correctly create a link without domain", { timeout }, async () => {
+test("correctly create a link", { timeout }, async () => {
   const response = await fetch(`${serverUrl}/api/links`, {
     method: "POST",
     headers: {
@@ -90,30 +90,6 @@ test("correctly create a link without domain", { timeout }, async () => {
 
   expect(redirect.status).toBe(302);
   expect(redirect.headers.get("location")).toBe(chicaneRepositoryTarget);
-});
-
-test("correctly create a link with domain", { timeout }, async () => {
-  const response = await fetch(`${serverUrl}/api/links`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-API-Key": env.API_KEY,
-    },
-    body: JSON.stringify({
-      target: chicaneRepositoryTarget,
-      domain: "swan.io",
-    }),
-  });
-
-  expect(response.status).toBe(200);
-
-  const json = (await response.json()) as Link;
-  expect(json).toHaveProperty("link");
-
-  const url = new URL(json.link ?? "");
-
-  expect(url.hostname).toBe("swan.io");
-  expect(url.pathname.substring(1)).toMatch(addressRegExp);
 });
 
 test("correctly create a link with custom address", { timeout }, async () => {
