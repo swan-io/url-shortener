@@ -51,7 +51,7 @@
     "@opentelemetry/sdk-trace-node": "1.26.0",
     "@opentelemetry/semantic-conventions": "1.27.0",
     "@sinclair/typebox": "0.33.16",
-    "@swan-io/boxed": "2.3.2",
+    "@swan-io/boxed": "3.0.0",
     "close-with-grace": "2.1.0",
     "dayjs": "1.11.13",
     "dotenv": "16.4.5",

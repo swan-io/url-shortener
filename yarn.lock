@@ -782,10 +782,10 @@
   resolved "https://registry.npmjs.org/@sinclair/typebox/-/typebox-0.33.16.tgz#d2ff7988011f16b9f321758754b9567caf5ced03"
   integrity sha512-jsz4f3LxXGh217hJE3MAOB+i3pzgr9wLGUBiCRNWaG/rRcVoS4+dzQok9SeZLtwNdmY44oGYQWlJCjIJxeLKEw==
 
-"@swan-io/boxed@2.3.2":
-  version "2.3.2"
-  resolved "https://registry.npmjs.org/@swan-io/boxed/-/boxed-2.3.2.tgz#2a5e8807193fa91ec85b46989340b0b26d1da5dd"
-  integrity sha512-VvJUs3SUq7ke+/bqJptFImTbtQPkdLpa1Tb6X3IpbKgcTIFISEdB7X96pWtiFbMw+25qp40z9h701SNs5fuaRg==
+"@swan-io/boxed@3.0.0":
+  version "3.0.0"
+  resolved "https://registry.npmjs.org/@swan-io/boxed/-/boxed-3.0.0.tgz#2118f0362461cd68d813a4286f15b59798074a90"
+  integrity sha512-E5so5kp40ZEwa/vQDxH9BevaKFrm6P4Gy84D2+q9tQeNcUQc2rrE3StH9tHLRCh+LcI5h9Nv3JMbpwpI3p8nQQ==
 
 "@types/cross-spawn@6.0.2":
   version "6.0.2"
