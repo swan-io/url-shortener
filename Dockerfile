@@ -1,7 +1,10 @@
 FROM node:latest AS builder
 WORKDIR /app
 COPY . .
-RUN yarn install --production
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+RUN pnpm install --prod --frozen-lockfile
 
 FROM cgr.dev/chainguard/node:latest
 WORKDIR /app

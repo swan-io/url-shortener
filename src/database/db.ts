@@ -15,7 +15,7 @@ const kyselyGlobal = global as typeof global & {
   db?: Kysely<DB>;
 };
 
-// workaround to make kysely work well during "yarn dev"
+// workaround to make kysely work well during "pnpm dev"
 // @see https://www.prisma.io/docs/support/help-articles/nextjs-prisma-client-dev-practices
 export const db =
   kyselyGlobal.db ??

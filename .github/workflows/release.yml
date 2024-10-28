@@ -15,19 +15,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: yarn
+          cache: pnpm
 
       - name: Install dependencies
-        run: yarn install --pure-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Run tests
-        run: yarn test
+        run: pnpm test
 
       - name: Build app
-        run: yarn build
+        run: pnpm build
 
       - name: Configure AWS Credentials
         if: ${{ github.repository == 'swan-io/url-shortener' }}
@@ -57,7 +59,7 @@ jobs:
 
       - name: Deploy preprod
         if: ${{ github.repository == 'swan-io/url-shortener' }}
-        run: yarn deploy-ci
+        run: pnpm deploy-ci
         env:
           TAG: preprod-${{ github.ref_name }}
           DEPLOY_SWAN_TOKEN: ${{ secrets.DEPLOY_SWAN_TOKEN }}
@@ -69,7 +71,7 @@ jobs:
 
       - name: Deploy prod
         if: ${{ github.repository == 'swan-io/url-shortener' }}
-        run: yarn deploy-ci
+        run: pnpm deploy-ci
         env:
           TAG: prod-${{ github.ref_name }}
           DEPLOY_SWAN_TOKEN: ${{ secrets.DEPLOY_SWAN_TOKEN }}

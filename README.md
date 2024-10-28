@@ -4,7 +4,7 @@ A simple URL shortener server backed by PostgreSQL.
 
 ## Getting started
 
-You need to install [yarn](https://classic.yarnpkg.com/en/docs/install#mac-stable).
+You need to install [pnpm 9.9.0](https://pnpm.io/installation#installing-a-specific-version).
 
 ### Clone
 
@@ -15,7 +15,7 @@ $ git clone git@github.com/swan-io/url-shortener.git
 ### Install
 
 ```bash
-$ yarn
+$ pnpm install
 ```
 
 ### Environment variables
@@ -27,7 +27,7 @@ At the project root, you should find a `.env.example` file. Copy its contents to
 To start the development server, run:
 
 ```bash
-$ yarn dev
+$ pnpm dev
 ```
 
 ## Building
@@ -35,7 +35,7 @@ $ yarn dev
 To build the production codebase, run:
 
 ```bash
-$ yarn build
+$ pnpm build
 ```
 
 ## Testing
@@ -43,5 +43,5 @@ $ yarn build
 Run tests (using [vitest](https://vitest.dev) and [pgmock](https://github.com/stackframe-projects/pgmock)):
 
 ```bash
-$ yarn test
+$ pnpm test
 ```
