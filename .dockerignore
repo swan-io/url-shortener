@@ -17,8 +17,6 @@ tests
 README.md
 LICENSE
 
-.yarnrc
-
 biome.json
 tsconfig.build.json
 tsconfig.json

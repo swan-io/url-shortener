@@ -112,8 +112,8 @@ const createGhCompareUrl = (from: string | undefined, to: string) =>
     logError("gh needs to be installed", "https://cli.github.com");
     process.exit(1);
   }
-  if (await isProgramMissing("yarn")) {
-    logError("yarn needs to be installed", "https://classic.yarnpkg.com");
+  if (await isProgramMissing("pnpm")) {
+    logError("pnpm needs to be installed", "https://pnpm.io");
     process.exit(1);
   }
 
