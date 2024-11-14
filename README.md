@@ -4,7 +4,7 @@ A simple URL shortener server backed by PostgreSQL.
 
 ## Getting started
 
-You need to install [pnpm 9.9.0](https://pnpm.io/installation#installing-a-specific-version).
+You need to install [pnpm](https://pnpm.io/installation).
 
 ### Clone
 
