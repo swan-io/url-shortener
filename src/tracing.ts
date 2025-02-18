@@ -9,23 +9,20 @@ import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
 import { JaegerPropagator } from "@opentelemetry/propagator-jaeger";
 import { Resource } from "@opentelemetry/resources";
-import {
-  BatchSpanProcessor,
-  NodeTracerProvider,
-} from "@opentelemetry/sdk-trace-node";
-import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
+import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
+import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
+import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import { FastifyRequest } from "fastify";
 
 if (process.env.TRACING_SERVICE_NAME != null) {
   const provider = new NodeTracerProvider({
+    spanProcessors: [new BatchSpanProcessor(new OTLPTraceExporter())],
     resource: Resource.default().merge(
       new Resource({
-        [SEMRESATTRS_SERVICE_NAME]: process.env.TRACING_SERVICE_NAME,
+        [ATTR_SERVICE_NAME]: process.env.TRACING_SERVICE_NAME,
       }),
     ),
   });
-
-  provider.addSpanProcessor(new BatchSpanProcessor(new OTLPTraceExporter()));
 
   provider.register({
     propagator: new CompositePropagator({

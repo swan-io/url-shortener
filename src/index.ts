@@ -5,11 +5,11 @@ import "./tracing";
 import schedule from "@fastify/schedule";
 import sensible from "@fastify/sensible";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
+import underPressure from "@fastify/under-pressure";
 import { Static, Type } from "@sinclair/typebox";
 import closeWithGrace from "close-with-grace";
 import dayjs from "dayjs";
 import fastify from "fastify";
-import health from "fastify-healthcheck";
 import metrics from "fastify-metrics";
 import { sql } from "kysely";
 import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
@@ -54,9 +54,11 @@ app.register(schedule);
 
 const debugOnlyLogLevel = env.LOG_LEVEL === "debug" ? "debug" : "silent";
 
-app.register(health, {
-  healthcheckUrl: "/api/health",
-  logLevel: debugOnlyLogLevel,
+app.register(underPressure, {
+  exposeStatusRoute: {
+    url: "/api/health",
+    routeOpts: { logLevel: debugOnlyLogLevel },
+  },
 });
 app.register(metrics, {
   endpoint: "/api/metrics",
@@ -170,16 +172,12 @@ app.get(
 );
 
 // delay is the number of ms for the graceful close to finish
-const closeListeners = closeWithGrace({ delay: 500 }, ({ err }) => {
+closeWithGrace({ delay: 500 }, async ({ err }) => {
   if (err) {
     app.log.error(err);
   }
 
-  return app.close();
-});
-
-app.addHook("onClose", async () => {
-  closeListeners.uninstall();
+  await app.close();
 });
 
 app.listen(

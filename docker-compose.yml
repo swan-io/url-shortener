@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16.3
+    image: postgres:17.3
     restart: always
     tty: true
     ports:
