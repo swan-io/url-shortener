@@ -40,7 +40,7 @@ const file = fs.readFileSync(filePath, "utf-8");
 
 fs.writeFileSync(
   filePath,
-  file.replaceAll(/\btag: .+/g, `tag: ${env.TAG}`),
+  file.replace(/\btag: .+/, `tag: ${env.TAG}`),
   "utf-8",
 );
 
