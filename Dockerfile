@@ -8,9 +8,6 @@ COPY ./prisma ./prisma
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
-ENV NODE_ENV="production"
-ENV PRISMA_CLI_BINARY_TARGETS="debian-openssl-3.0.x"
-
 RUN npm install -g pnpm@latest-10
 RUN pnpm install --prod --frozen-lockfile
 

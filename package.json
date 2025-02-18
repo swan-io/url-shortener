@@ -30,6 +30,15 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@biomejs/biome",
+      "@prisma/engines",
+      "esbuild",
+      "prisma",
+      "protobufjs"
+    ]
+  },
   "prettier": {
     "plugins": [
       "prettier-plugin-organize-imports"
