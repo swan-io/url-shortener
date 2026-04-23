@@ -37,7 +37,10 @@
       "esbuild",
       "prisma",
       "protobufjs"
-    ]
+    ],
+    "overrides": {
+      "lodash": "4.18.1"
+    }
   },
   "prettier": {
     "plugins": [
