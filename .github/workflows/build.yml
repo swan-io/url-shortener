@@ -29,6 +29,4 @@ jobs:
         run: pnpm test
 
       - name: Build app
-        env:
-          DATABASE_URL: " " # Avoid "Error: Environment variable not found: DATABASE_URL" during build
         run: pnpm build
