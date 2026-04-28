@@ -29,7 +29,14 @@ execSync(
   `cd ${tmp} && git clone --single-branch --branch master https://projects:${env.DEPLOY_SWAN_TOKEN}@${env.DEPLOY_SWAN_REPOSITORY} ${repoName}`,
 );
 
-const filePath = path.join(tmp, repoName, env.DEPLOY_ENVIRONMENT, "Chart.yaml");
+const filePath = path.join(
+  tmp,
+  repoName,
+  env.DEPLOY_APP_NAME,
+  "argocd",
+  env.DEPLOY_ENVIRONMENT,
+  "Chart.yaml",
+);
 
 const file = fs.readFileSync(filePath, "utf-8");
 
