@@ -1,7 +1,7 @@
 FROM node:22 AS builder
 WORKDIR /app
 
-COPY ./.npmrc ./package.json ./pnpm-lock.yaml .
+COPY ./.npmrc ./package.json ./pnpm-lock.yaml ./prisma.config.ts .
 COPY ./dist ./dist
 COPY ./prisma ./prisma
 
