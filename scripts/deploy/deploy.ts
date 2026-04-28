@@ -33,14 +33,14 @@ const filePath = path.join(
   tmp,
   repoName,
   env.DEPLOY_ENVIRONMENT,
-  `${env.DEPLOY_APP_NAME}-values.yaml`,
+  "Chart.yaml",
 );
 
 const file = fs.readFileSync(filePath, "utf-8");
 
 fs.writeFileSync(
   filePath,
-  file.replace(/\btag: .+/, `tag: ${env.TAG}`),
+  file.replace(/\bappVersion: .+/, `appVersion: ${env.TAG}`),
   "utf-8",
 );
 
