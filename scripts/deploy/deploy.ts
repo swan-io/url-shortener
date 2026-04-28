@@ -29,18 +29,13 @@ execSync(
   `cd ${tmp} && git clone --single-branch --branch master https://projects:${env.DEPLOY_SWAN_TOKEN}@${env.DEPLOY_SWAN_REPOSITORY} ${repoName}`,
 );
 
-const filePath = path.join(
-  tmp,
-  repoName,
-  env.DEPLOY_ENVIRONMENT,
-  `${env.DEPLOY_APP_NAME}-values.yaml`,
-);
+const filePath = path.join(tmp, repoName, env.DEPLOY_ENVIRONMENT, "Chart.yaml");
 
 const file = fs.readFileSync(filePath, "utf-8");
 
 fs.writeFileSync(
   filePath,
-  file.replace(/\btag: .+/, `tag: ${env.TAG}`),
+  file.replace(/\bappVersion: .+/, `appVersion: ${env.TAG}`),
   "utf-8",
 );
 
