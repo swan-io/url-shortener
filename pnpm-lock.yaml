@@ -101,6 +101,9 @@ importers:
       prisma-kysely:
         specifier: 3.1.0
         version: 3.1.0(prisma@7.8.0(typescript@5.7.3))
+      protobufjs:
+        specifier: 7.5.5
+        version: 7.5.5
       toad-scheduler:
         specifier: 3.0.1
         version: 3.0.1
@@ -975,12 +978,9 @@ packages:
     resolution: {integrity: sha512-b6gTSBjJ8G8SuO3Gbbj+zXbVx8NSs1EbpbMKpzGLWMdkR+98McH9bEjSz3+0mPJf68c5nxa3CrJHp5EQNXM6zQ==}
 
   '@swan-io/boxed@3.2.0':
-    resolution: {integrity: sha512-wk6gSWjZ7nj619ifwyLFZN+B0mjpsXyfroT97ByFqvi5Ywx9nLWz7cEvStTNGIh1oAxKxGtGQLbs9dFGmtypNA==}
+    resolution: {integrity: sha512-6njvFpKA3WJ2MUXjA3qEcz/sq2kqgT8WogZm++4mBlMGLjxhq4y7pX28gLE+dZ1Yc6TJLuNSM/32FTEirX1Jpg==, tarball: https://npm.pkg.github.com/download/@swan-io/boxed/3.2.0/ac661a3cc464a038cfd209f32ffc666f2b0cf797}
     peerDependencies:
       typescript: '>=5.0.0'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
 
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
@@ -1619,8 +1619,8 @@ packages:
   proper-lockfile@4.1.2:
     resolution: {integrity: sha512-TjNPblN4BwAWMXU8s9AEz4JmQxnD1NNL7bNOY/AKUzyamc379FWASUhc/K1pL2noVb+XmZKLL68cjzLsiOAMaA==}
 
-  protobufjs@7.4.0:
-    resolution: {integrity: sha512-mRUWCc3KUU4w1jU8sGxICXH/gNS94DvI1gxqDvBzhj1JpcsimQkYiOJfwsPUykUI5ZaspFbSgmBLER8IrQ3tqw==}
+  protobufjs@7.5.5:
+    resolution: {integrity: sha512-3wY1AxV+VBNW8Yypfd1yQY9pXnqTAN+KwQxL8iYm3/BjKYMNg4i0owhEe26PWDOMaIrzeeF98Lqd5NGz4omiIg==}
     engines: {node: '>=12.0.0'}
 
   pump@3.0.2:
@@ -2302,7 +2302,7 @@ snapshots:
       '@opentelemetry/sdk-logs': 0.57.2(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-metrics': 1.30.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-trace-base': 1.30.1(@opentelemetry/api@1.9.0)
-      protobufjs: 7.4.0
+      protobufjs: 7.5.5
 
   '@opentelemetry/propagator-b3@1.30.1(@opentelemetry/api@1.9.0)':
     dependencies:
@@ -2598,7 +2598,7 @@ snapshots:
   '@streamparser/json@0.0.22': {}
 
   '@swan-io/boxed@3.2.0(typescript@5.7.3)':
-    optionalDependencies:
+    dependencies:
       typescript: 5.7.3
 
   '@types/estree@1.0.6': {}
@@ -3278,7 +3278,7 @@ snapshots:
       retry: 0.12.0
       signal-exit: 3.0.7
 
-  protobufjs@7.4.0:
+  protobufjs@7.5.5:
     dependencies:
       '@protobufjs/aspromise': 1.1.2
       '@protobufjs/base64': 1.1.2
