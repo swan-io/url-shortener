@@ -84,8 +84,8 @@ importers:
         specifier: 5.0.1
         version: 5.0.1
       kysely:
-        specifier: 0.27.5
-        version: 0.27.5
+        specifier: 0.28.14
+        version: 0.28.14
       pg:
         specifier: 8.13.3
         version: 8.13.3
@@ -1371,9 +1371,9 @@ packages:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
     engines: {node: '>=6'}
 
-  kysely@0.27.5:
-    resolution: {integrity: sha512-s7hZHcQeSNKpzCkHRm8yA+0JPLjncSWnjb+2TIElwS2JAqYr+Kv3Ess+9KFfJS0C1xcQ1i9NkNHpWwCYpHMWsA==}
-    engines: {node: '>=14.0.0'}
+  kysely@0.28.14:
+    resolution: {integrity: sha512-SU3lgh0rPvq7upc6vvdVrCsSMUG1h3ChvHVOY7wJ2fw4C9QEB7X3d5eyYEyULUX7UQtxZJtZXGuT6U2US72UYA==}
+    engines: {node: '>=20.0.0'}
 
   light-my-request@6.6.0:
     resolution: {integrity: sha512-CHYbu8RtboSIoVsHZ6Ye4cj4Aw/yg2oAFimlF7mNvfDV192LR7nDiKtSIfCuLT7KokPSTn/9kfVLm5OGN0A28A==}
@@ -3029,7 +3029,7 @@ snapshots:
 
   kleur@3.0.3: {}
 
-  kysely@0.27.5: {}
+  kysely@0.28.14: {}
 
   light-my-request@6.6.0:
     dependencies:
