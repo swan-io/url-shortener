@@ -17,8 +17,8 @@ const timeout = 30000;
 const addressRegExp = /^[0-9A-Z]{6,}$/i;
 const isoDateRegExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
-const boxedRepositoryTarget = "https://github.com/@swan-io/boxed";
-const chicaneRepositoryTarget = "https://github.com/@swan-io/chicane";
+const boxedRepositoryTarget = "https://github.com/@bloodyowl/boxed";
+const chicaneRepositoryTarget = "https://github.com/@zoontek/chicane";
 
 // biome-ignore lint/suspicious/noExplicitAny:
 const getNowFromDb = async (db: Kysely<any>) => {

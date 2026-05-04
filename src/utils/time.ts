@@ -1,4 +1,4 @@
-import { Dict } from "@swan-io/boxed";
+import { Dict } from "@bloodyowl/boxed";
 import dayjs from "dayjs";
 import duration, { DurationUnitType } from "dayjs/plugin/duration";
 
