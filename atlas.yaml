@@ -1,0 +1,15 @@
+apiVersion: atlas.swan.io/v1
+kind: Service
+metadata:
+  name: url-shortener
+  teams:
+    - front
+
+spec:
+  type: api
+  tier: internal
+  language: typescript
+  slack:
+    general: "#team-engineering-front"
+    releases:
+      - "#releases-front"
