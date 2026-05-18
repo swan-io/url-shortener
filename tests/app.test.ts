@@ -20,7 +20,7 @@ const isoDateRegExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 const boxedRepositoryTarget = "https://github.com/@bloodyowl/boxed";
 const chicaneRepositoryTarget = "https://github.com/@zoontek/chicane";
 
-// biome-ignore lint/suspicious/noExplicitAny:
+// biome-ignore lint/suspicious/noExplicitAny: generic db helper for test queries
 const getNowFromDb = async (db: Kysely<any>) => {
   const result = await db.executeQuery(sql`SELECT now()`.compile(db));
 
@@ -32,14 +32,14 @@ beforeAll(async () => {
   const dbMock = await PostgresMock.create();
   await dbMock.listen(25432);
 
-  const { db } = await import("../src/database/db");
+  const { db } = await import("../src/database/db.js");
   const schema = await fs.readFile(path.join(__dirname, "schema.sql"), "utf-8");
 
   // @ts-expect-error
   const dbSchema = sql(schema);
   await db.executeQuery(dbSchema.compile(db));
 
-  const { app } = await import("../src/index");
+  const { app } = await import("../src/index.js");
   await app.ready();
 
   return async () => {
@@ -49,7 +49,7 @@ beforeAll(async () => {
 }, timeout);
 
 afterEach(async () => {
-  const { db } = await import("../src/database/db");
+  const { db } = await import("../src/database/db.js");
   await db.deleteFrom("links").executeTakeFirstOrThrow();
 }, timeout);
 
@@ -155,7 +155,7 @@ test("redirect to fallback url when no target found", { timeout }, async () => {
 });
 
 test("don't return an expired link", { timeout }, async () => {
-  const { db } = await import("../src/database/db");
+  const { db } = await import("../src/database/db.js");
   const now = await getNowFromDb(db);
 
   const { address } = await db
@@ -177,7 +177,7 @@ test("don't return an expired link", { timeout }, async () => {
 });
 
 test("clean expired links", { timeout }, async () => {
-  const { db } = await import("../src/database/db");
+  const { db } = await import("../src/database/db.js");
   const now = await getNowFromDb(db);
 
   await db
@@ -197,7 +197,7 @@ test("clean expired links", { timeout }, async () => {
     .returning("address")
     .executeTakeFirstOrThrow();
 
-  const { cleanExpiredLinks } = await import("../src");
+  const { cleanExpiredLinks } = await import("../src/index.js");
   const { numDeletedRows } = await cleanExpiredLinks();
 
   expect(numDeletedRows).toBe(BigInt(1));

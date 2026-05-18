@@ -1,18 +1,18 @@
 process.env.TZ = "UTC";
 
-import "./tracing";
+import { fastifyOtelInstrumentation } from "./tracing";
 
 import schedule from "@fastify/schedule";
 import sensible from "@fastify/sensible";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import underPressure from "@fastify/under-pressure";
-import { Static, Type } from "@sinclair/typebox";
 import closeWithGrace from "close-with-grace";
 import dayjs from "dayjs";
 import fastify from "fastify";
 import metrics from "fastify-metrics";
 import { sql } from "kysely";
 import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
+import { Static, Type } from "typebox";
 import { db } from "./database/db";
 import { auth } from "./plugins/auth";
 import { generateAddress } from "./utils/address";
@@ -48,6 +48,9 @@ export const app = fastify({
   },
 }).withTypeProvider<TypeBoxTypeProvider>();
 
+if (fastifyOtelInstrumentation != null) {
+  app.register(fastifyOtelInstrumentation.plugin());
+}
 app.register(sensible);
 app.register(auth);
 app.register(schedule);
