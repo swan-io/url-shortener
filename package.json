@@ -86,6 +86,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.15",
+    "@octokit/auth-app": "8.2.0",
+    "@octokit/rest": "22.0.1",
     "@types/node": "25.8.0",
     "@types/pg": "8.20.0",
     "@types/prompts": "2.4.9",
