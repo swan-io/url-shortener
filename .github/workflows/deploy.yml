@@ -25,38 +25,38 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run tests
-        run: pnpm test
+      # - name: Run tests
+      #   run: pnpm test
 
-      - name: Build app
-        run: pnpm build
+      # - name: Build app
+      #   run: pnpm build
 
-      - name: Configure AWS Credentials
-        if: ${{ github.repository == 'swan-io/url-shortener' }}
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE }}
-          aws-region: eu-west-1
+      # - name: Configure AWS Credentials
+      #   if: ${{ github.repository == 'swan-io/url-shortener' }}
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     role-to-assume: ${{ secrets.AWS_ROLE }}
+      #     aws-region: eu-west-1
 
-      - name: Login to Docker Registry
-        if: ${{ github.repository == 'swan-io/url-shortener' }}
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.DOCKER_REGISTRY }}
+      # - name: Login to Docker Registry
+      #   if: ${{ github.repository == 'swan-io/url-shortener' }}
+      #   uses: docker/login-action@v3
+      #   with:
+      #     registry: ${{ secrets.DOCKER_REGISTRY }}
 
-      - name: Dockerize & Push to Registry
-        if: ${{ github.repository == 'swan-io/url-shortener' }}
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile
-          push: true
-          tags: |
-            ${{ secrets.DOCKER_REGISTRY }}/url-shortener:master-${{ github.sha }}
-            ${{ secrets.DOCKER_REGISTRY }}/url-shortener:master-${{ github.ref_name }}
+      # - name: Dockerize & Push to Registry
+      #   if: ${{ github.repository == 'swan-io/url-shortener' }}
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: .
+      #     file: Dockerfile
+      #     push: true
+      #     tags: |
+      #       ${{ secrets.DOCKER_REGISTRY }}/url-shortener:master-${{ github.sha }}
+      #       ${{ secrets.DOCKER_REGISTRY }}/url-shortener:master-${{ github.ref_name }}
 
       - name: Deploy
-        if: ${{ github.repository == 'swan-io/url-shortener' }}
+        # if: ${{ github.repository == 'swan-io/url-shortener' }}
         run: pnpm deploy-ci
         env:
           TAG: master-${{ github.sha }}

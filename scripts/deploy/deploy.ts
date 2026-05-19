@@ -5,11 +5,14 @@ const { Octokit } = require("@octokit/rest");
 
 const OWNER = "swan-io";
 const REPO = "deploy-swan";
-const BRANCH = "master";
+const BRANCH = "enp-4322-update-deploy-script";
 
 assert(process.env.TAG, "TAG is required");
 assert(process.env.DEPLOY_SWAN_APP_ID, "DEPLOY_SWAN_APP_ID is required");
-assert(process.env.DEPLOY_SWAN_APP_SECRET, "DEPLOY_SWAN_APP_SECRET is required");
+assert(
+  process.env.DEPLOY_SWAN_APP_SECRET,
+  "DEPLOY_SWAN_APP_SECRET is required",
+);
 assert(process.env.DEPLOY_ENVIRONMENT, "DEPLOY_ENVIRONMENT is required");
 assert(process.env.DEPLOY_APP_NAME, "DEPLOY_APP_NAME is required");
 
@@ -19,12 +22,17 @@ async function getInstallationToken(appId, privateKey) {
   const { token: jwtToken } = await auth({ type: "app" });
   const appOctokit = new Octokit({ auth: jwtToken });
 
-  const { data: installation } = await appOctokit.rest.apps.getRepoInstallation({
-    owner: OWNER,
-    repo: REPO,
-  });
+  const { data: installation } = await appOctokit.rest.apps.getRepoInstallation(
+    {
+      owner: OWNER,
+      repo: REPO,
+    },
+  );
 
-  const { token } = await auth({ type: "installation", installationId: installation.id });
+  const { token } = await auth({
+    type: "installation",
+    installationId: installation.id,
+  });
   return token;
 }
 
@@ -68,7 +76,12 @@ async function commitViaGitHubAPI(octokit, message, files, maxRetries = 3) {
             content: Buffer.from(content).toString("base64"),
             encoding: "base64",
           });
-          return { path: filePath, mode: "100644", type: "blob", sha: blob.sha };
+          return {
+            path: filePath,
+            mode: "100644",
+            type: "blob",
+            sha: blob.sha,
+          };
         }),
       );
 
@@ -97,9 +110,16 @@ async function commitViaGitHubAPI(octokit, message, files, maxRetries = 3) {
       console.log(`Git: ✅ Committed ${newCommit.sha}`);
       return;
     } catch (err) {
-      if (attempt < maxRetries - 1 && (err.status === 422 || err.status === 409)) {
-        console.warn(`Ref update conflict, retrying (${attempt + 2}/${maxRetries})...`);
-        await new Promise((resolve) => setTimeout(resolve, 2000 * (attempt + 1)));
+      if (
+        attempt < maxRetries - 1 &&
+        (err.status === 422 || err.status === 409)
+      ) {
+        console.warn(
+          `Ref update conflict, retrying (${attempt + 2}/${maxRetries})...`,
+        );
+        await new Promise((resolve) =>
+          setTimeout(resolve, 2000 * (attempt + 1)),
+        );
         continue;
       }
       throw err;
@@ -109,7 +129,10 @@ async function commitViaGitHubAPI(octokit, message, files, maxRetries = 3) {
 
 (async () => {
   const privateKey = process.env.DEPLOY_SWAN_APP_SECRET.replace(/\\n/g, "\n");
-  const token = await getInstallationToken(process.env.DEPLOY_SWAN_APP_ID, privateKey);
+  const token = await getInstallationToken(
+    process.env.DEPLOY_SWAN_APP_ID,
+    privateKey,
+  );
   const octokit = new Octokit({ auth: token });
 
   const filePath = `${process.env.DEPLOY_APP_NAME}/argocd/${process.env.DEPLOY_ENVIRONMENT}/${process.env.DEPLOY_APP_NAME}-values.yaml`;
@@ -119,7 +142,10 @@ async function commitViaGitHubAPI(octokit, message, files, maxRetries = 3) {
     throw new Error(`File not found: ${filePath}`);
   }
 
-  const updatedContent = file.content.replaceAll(/\btag: .+/g, `tag: ${process.env.TAG}`);
+  const updatedContent = file.content.replaceAll(
+    /\btag: .+/g,
+    `tag: ${process.env.TAG}`,
+  );
 
   if (updatedContent === file.content) {
     console.log("No changes to commit");
@@ -127,5 +153,9 @@ async function commitViaGitHubAPI(octokit, message, files, maxRetries = 3) {
   }
 
   const message = `[Update Deploy Swan] App: ${process.env.DEPLOY_APP_NAME} new tag ${process.env.TAG}, ECR: ${process.env.DEPLOY_APP_NAME}`;
-  await commitViaGitHubAPI(octokit, message, new Map([[filePath, updatedContent]]));
+  await commitViaGitHubAPI(
+    octokit,
+    message,
+    new Map([[filePath, updatedContent]]),
+  );
 })();
