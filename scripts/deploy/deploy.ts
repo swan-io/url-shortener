@@ -135,7 +135,7 @@ async function commitViaGitHubAPI(octokit, message, files, maxRetries = 3) {
   );
   const octokit = new Octokit({ auth: token });
 
-  const filePath = `${process.env.DEPLOY_APP_NAME}/argocd/${process.env.DEPLOY_ENVIRONMENT}/${process.env.DEPLOY_APP_NAME}-values.yaml`;
+  const filePath = `${process.env.DEPLOY_APP_NAME}/argocd/${process.env.DEPLOY_ENVIRONMENT}/Chart.yaml`;
 
   const file = await fetchFile(octokit, filePath);
   if (!file) {
@@ -143,8 +143,8 @@ async function commitViaGitHubAPI(octokit, message, files, maxRetries = 3) {
   }
 
   const updatedContent = file.content.replaceAll(
-    /\btag: .+/g,
-    `tag: ${process.env.TAG}`,
+    /\bappVersion: .+/g,
+    `appVersion: ${process.env.TAG}`,
   );
 
   if (updatedContent === file.content) {
