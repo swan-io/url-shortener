@@ -24,10 +24,10 @@ export const app = fastify({
   logger: {
     level: env.LOG_LEVEL,
     formatters: {
-        level(label) {
-          return { level: label };
-        },
+      level(label) {
+        return { level: label };
       },
+    },
     redact: {
       paths: ['req.headers["x-api-key"]'],
     },
