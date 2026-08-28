@@ -9,7 +9,6 @@ import underPressure from "@fastify/under-pressure";
 import closeWithGrace from "close-with-grace";
 import dayjs from "dayjs";
 import fastify from "fastify";
-import metrics from "fastify-metrics";
 import { sql } from "kysely";
 import { AsyncTask, SimpleIntervalJob } from "toad-scheduler";
 import { Static, Type } from "typebox";
@@ -67,10 +66,6 @@ app.register(underPressure, {
     url: "/api/health",
     routeOpts: { logLevel: debugOnlyLogLevel },
   },
-});
-app.register(metrics, {
-  endpoint: "/api/metrics",
-  logLevel: debugOnlyLogLevel,
 });
 
 app.get<{ Params: { address: string } }>(

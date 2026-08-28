@@ -1,7 +1,7 @@
 import fp from "fastify-plugin";
 import { env } from "../utils/env";
 
-const whitelist = new Set(["/api/health", "/api/metrics"]);
+const whitelist = new Set(["/api/health"]);
 
 export const auth = fp(async (fastify) => {
   fastify.addHook("onRequest", async (request, reply) => {
