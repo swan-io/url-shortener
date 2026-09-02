@@ -28,5 +28,12 @@ jobs:
       - name: Run tests
         run: pnpm test
 
+      # Explicit step rather than relying on `pnpm build` happening to invoke `pnpm lint`:
+      # this keeps the gate named in CI, and keeps it working if `lint` is ever refactored
+      # out of `build`. The other repos in the rollout get this via TEST_LIST; this repo has
+      # no reusable workflow, so it is spelled out here.
+      - name: Lint SQL migrations
+        run: pnpm ci:test:lint-sql
+
       - name: Build app
         run: pnpm build
