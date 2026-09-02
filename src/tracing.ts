@@ -26,10 +26,10 @@ const packageJson = JSON.parse(
 
 export let fastifyOtelInstrumentation: FastifyOtelInstrumentation | undefined;
 
-if (process.env.TRACING_SERVICE_NAME != null) {
+if (process.env.OTEL_SERVICE_NAME != null) {
   const resource = defaultResource().merge(
     resourceFromAttributes({
-      [ATTR_SERVICE_NAME]: process.env.TRACING_SERVICE_NAME,
+      [ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME,
     }),
   );
 
