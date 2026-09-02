@@ -23,7 +23,10 @@
     "dev": "pnpm codegen && tsx watch --clear-screen=false src",
     "dump-schema": "prisma migrate diff --from-empty --to-schema-datasource prisma/schema.prisma --script > tests/schema.sql",
     "format": "prettier '**/*' -u -w && prisma format",
-    "lint": "biome check . --files-ignore-unknown=true --no-errors-on-unmatched",
+    "lint": "pnpm lint:biome && pnpm lint:sql",
+    "lint:biome": "biome check . --files-ignore-unknown=true --no-errors-on-unmatched",
+    "lint:sql": "squawk --no-error-on-unmatched-pattern 'prisma/migrations/**/*.sql'",
+    "ci:test:lint-sql": "pnpm run lint:sql",
     "migrate": "prisma migrate dev",
     "start": "prisma migrate deploy && node dist",
     "test": "vitest run",
@@ -85,6 +88,7 @@
     "valienv": "1.1.0"
   },
   "devDependencies": {
+    "squawk-cli": "2.62.0",
     "@biomejs/biome": "2.4.15",
     "@octokit/auth-app": "8.2.0",
     "@octokit/rest": "22.0.1",

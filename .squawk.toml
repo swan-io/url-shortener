@@ -1,0 +1,13 @@
+# Generated for STF-644.
+#   pg_version: Swan production Postgres major (14), NOT the CI container tag.
+#   assume_in_transaction: Prisma wraps each migration in a transaction by default.
+#               For CREATE INDEX CONCURRENTLY add `-- squawk-disable-assume-in-transaction`
+#               at the top of that migration file.
+pg_version = "14.9"
+assume_in_transaction = true
+
+# Legacy migrations applied before squawk was introduced. Grandfathered so only NEW
+# migrations are linted.
+excluded_paths = [
+  "prisma/migrations/20240612162929_initial_migration/migration.sql",
+]
