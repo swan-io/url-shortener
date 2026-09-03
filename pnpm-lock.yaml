@@ -153,6 +153,9 @@ importers:
       semver:
         specifier: 7.8.0
         version: 7.8.0
+      squawk-cli:
+        specifier: 2.62.0
+        version: 2.62.0
       tsx:
         specifier: 4.22.1
         version: 4.22.1
@@ -1070,6 +1073,31 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@squawk-cli/darwin-arm64@2.62.0':
+    resolution: {integrity: sha512-5zF+PVLAEF5b3aaeNbj5+K4fj0OFMFISTr+Q7XGcRUmNZjjVY5/F/BE07LZYZxhy78JdOJWT3XuCak9l4Uxg2Q==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@squawk-cli/darwin-x64@2.62.0':
+    resolution: {integrity: sha512-2h//RApsHPIQUcuOf8m44Vt9WTzeJzN0P6DNVXf7Je3lN3QNva9DrDmd3qBa84R/pL9/msaxdCbmbm3PyjDprw==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@squawk-cli/linux-arm64@2.62.0':
+    resolution: {integrity: sha512-jhIKkuYRUVBM1F9qGnaSNcL0eUiYTfRwyRr5gnhEHQqZsTU0zx0nm6AMFc6uHS3uHr6/NZDPK/qSCO310j+VRg==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@squawk-cli/linux-x64@2.62.0':
+    resolution: {integrity: sha512-6gySicmZvDS+qAKdZ9qAbGVc5GH7i8ZUaGDn3UzMUF/17jl2nzLbvPr/HHpdwLbOFRx4/Y8GzkORkgKtqj3oxw==}
+    cpu: [x64]
+    os: [linux]
+
+  '@squawk-cli/win32-x64@2.62.0':
+    resolution: {integrity: sha512-JTETGqsOp5SLspLzwr9Xzo4Xbp1LM8TDrEGtFyfHcGISmcQLYkFH+EZLhOZRTIDkj8ngBraBQj9HX6hc4HP1bw==}
+    cpu: [x64]
+    os: [win32]
+
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
@@ -1882,6 +1910,10 @@ packages:
   sqlstring@2.3.3:
     resolution: {integrity: sha512-qC9iz2FlN7DQl3+wjwn3802RTyjCx7sDvfQEXchwa6CWOx07/WVfh91gBmQ9fahw8snwGEWU3xGzOt4tFyHLxg==}
     engines: {node: '>= 0.6'}
+
+  squawk-cli@2.62.0:
+    resolution: {integrity: sha512-gQlOseeJGM+qyP2zoreysQ17Ld9zgYBKA+H5Xyw7S0bJMCvX6Du/j0dTuQ6yqW2HElKKRvJ7Bm86nOMvroRBFQ==}
+    hasBin: true
 
   stackback@0.0.2:
     resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
@@ -2863,6 +2895,21 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.60.4':
     optional: true
 
+  '@squawk-cli/darwin-arm64@2.62.0':
+    optional: true
+
+  '@squawk-cli/darwin-x64@2.62.0':
+    optional: true
+
+  '@squawk-cli/linux-arm64@2.62.0':
+    optional: true
+
+  '@squawk-cli/linux-x64@2.62.0':
+    optional: true
+
+  '@squawk-cli/win32-x64@2.62.0':
+    optional: true
+
   '@standard-schema/spec@1.1.0': {}
 
   '@streamparser/json@0.0.22': {}
@@ -3673,6 +3720,14 @@ snapshots:
   split2@4.2.0: {}
 
   sqlstring@2.3.3: {}
+
+  squawk-cli@2.62.0:
+    optionalDependencies:
+      '@squawk-cli/darwin-arm64': 2.62.0
+      '@squawk-cli/darwin-x64': 2.62.0
+      '@squawk-cli/linux-arm64': 2.62.0
+      '@squawk-cli/linux-x64': 2.62.0
+      '@squawk-cli/win32-x64': 2.62.0
 
   stackback@0.0.2: {}
 
