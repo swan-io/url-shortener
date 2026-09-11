@@ -11,12 +11,12 @@ import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
 import {
   defaultResource,
-  resourceFromAttributes,
+  detectResources,
+  envDetector,
 } from "@opentelemetry/resources";
 import { MeterProvider } from "@opentelemetry/sdk-metrics";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
-import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -27,10 +27,13 @@ const packageJson = JSON.parse(
 export let fastifyOtelInstrumentation: FastifyOtelInstrumentation | undefined;
 
 if (process.env.OTEL_SERVICE_NAME != null) {
+  // `defaultResource()` only provides `telemetry.sdk.*` and a default
+  // `service.name`; it does not parse `OTEL_RESOURCE_ATTRIBUTES`. Run the
+  // env detector so platform-injected attributes (`service.namespace`,
+  // `deployment.environment.name`, `service.version`, `service.instance.id`,
+  // `k8s.*`) and `OTEL_SERVICE_NAME` land on the exported resource.
   const resource = defaultResource().merge(
-    resourceFromAttributes({
-      [ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME,
-    }),
+    detectResources({ detectors: [envDetector] }),
   );
 
   const METRICS_PORT = Number(
