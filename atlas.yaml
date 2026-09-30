@@ -13,3 +13,4 @@ spec:
     general: "#team-engineering-front"
     releases:
       - "#releases-front"
+    incidents: "#alerting-prod-frontend"
