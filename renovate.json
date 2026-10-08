@@ -8,7 +8,9 @@
     {
       "description": "Swan golden images: <node>-<variant>-swan.N — the variant is fixed, N and the node version move",
       "matchDatasources": ["docker"],
-      "matchPackageNames": ["326954429656.dkr.ecr.eu-west-1.amazonaws.com/golden-images/**"],
+      "matchPackageNames": [
+        "326954429656.dkr.ecr.eu-west-1.amazonaws.com/golden-images/**"
+      ],
       "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-(?<compatibility>.+)-swan\\.(?<build>\\d+)$",
       "groupName": "Swan golden images"
     }
